@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Handin System - UL</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <form onsubmit="return checkSubmit()" action="" method="post">
+            <div class="form-group">
+                <label for="studentID">Student ID: </label>
+                <input type="text" class="form-control" id="studentID" name="studentID" placeholder="Enter Student ID">
+                <span id="idMsg" style="color: red;"></span>
+            </div>
+            <div class="form-group">
+                <label for="studentName">Student Name: </label>
+                <input type="text" class="form-control" id="studentName" name="studentName" placeholder="Enter Student Name">
+                <span id="nameMsg" style="color: red;"></span>
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitBtn" name="submitBtn">Submit</button>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#studentID").blur(function () {
+                let studentID = $(this).val()
+                if (studentID == null || studentID.length === 0)
+                    $("#idMsg").html('Student ID cannot be null!')
+                else
+                    $("#idMsg").html('')
+                $("#errorMsg").html('')
+            })
+
+            $("#studentName").blur(function () {
+                let studentName = $(this).val()
+                if (studentName == null || studentName.length === 0)
+                    $("#nameMsg").html('Student Name cannot be null!')
+                else
+                    $("#nameMsg").html('')
+                $("#errorMsg").html('')
+            })
+        })
+
+        function checkSubmit() {
+            let studentID = $("#studentID").val()
+            let studentName = $("#studentName").val()
+
+            return !(studentID == null || studentID.length === 0
+                || studentName == null || studentName.length === 0);
+        }
+    </script>
+</body>
+</html>
