@@ -2,14 +2,14 @@ import cgi
 import io
 import os
 import subprocess
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, CGIHTTPRequestHandler
 
 HOST = "127.0.0.1"
 PORT = 8000
 
 ADDR = (HOST, PORT)
 
-ROOT = os.path.dirname(__file__)
+DIR_ROOT = os.path.dirname(__file__)
 
 # directory to save handin.py file temperately
 DIR_TEMP = "/temp/"
@@ -105,6 +105,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         CaseDefault(),
     ]
 
+    handin_file_path = DIR_ROOT + DIR_TEMP
+    student_data_path = DIR_ROOT + DIR_DATA
+
     def do_GET(self):
         try:
             self.full_path = os.getcwd() + self.path
@@ -141,18 +144,45 @@ class RequestHandler(BaseHTTPRequestHandler):
             student_id = form['studentID'].value
             student_name = form['studentName'].value
 
-            self.create_handin_file(student_id, student_name)
-
             out.write('<a href="/temp/handin_{}.txt" download="handin.py">Download handin.py</a>'.format(student_id))
             out.detach()
+
+            self.create_handin_file(student_id)
+            self.update_handin_file(student_id, student_name)
+            self.add_student_to_class_list(student_id)
 
         except Exception as e:
             self.handle_error(e)
 
-    def create_handin_file(self, student_id, student_name):
-        # TODO: create /temp/ file directory
-        # the /temp/handin_xxx.txt must be in txt format. It is downloaded as handin.py file
-        pass
+    def create_handin_file(self, student_id):
+        # create /temp/ file directory if not exists
+        if not os.path.exists(self.handin_file_path):
+            os.mkdir(self.handin_file_path)
+        # the /temp/handin_xxx.txt must be in .txt format. It is downloaded as handin.py file
+        filename = "handin_" + student_id + ".txt"
+        if not os.path.exists(self.handin_file_path + filename):
+            with open(self.handin_file_path + filename, 'w'):
+                pass
+
+    def update_handin_file(self, student_id, student_name):
+        """write content to handin.py file"""
+        # check if handin_xxx.txt file exists
+        filename = "handin_" + student_id + ".txt"
+        if not os.path.exists(self.handin_file_path + filename):
+            self.create_handin_file(student_id)
+        # TODO: write content to handin_xxx.txt file
+        # read handin_student_template.py file
+        with open(self.handin_file_path + filename, 'wb') as f:
+            f.write(open('handin_student_template.py', 'rb').read())
+
+    def add_student_to_class_list(self, student_id):
+        """create /data/**student_id**/ directory"""
+        # TODO: if need to add student to database???
+        if not os.path.exists(self.student_data_path):
+            os.mkdir(self.student_data_path)
+        subdir = str(student_id)
+        if not os.path.exists(self.student_data_path + subdir):
+            os.mkdir(self.student_data_path + subdir)
 
     def handle_error(self, msg):
         content = self.error_page.format(path=self.path, msg=msg)
@@ -175,5 +205,5 @@ if __name__ == '__main__':
     serverAddr = ADDR
     server = HTTPServer(server_address=serverAddr, RequestHandlerClass=RequestHandler)
     print('Starting server ...')
-    server.serve_forever()
     print('Open http://{}:{}'.format(HOST, PORT))
+    server.serve_forever()
