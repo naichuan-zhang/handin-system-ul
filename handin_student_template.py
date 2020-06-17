@@ -4,7 +4,12 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
-# TODO: add configs HOST, PORT, STUDENT_NAME, STUDENT_ID, MODULE_CODE, MODULE_NAME
+HOST = "{}"
+PORT = "{}"
+STUDENT_NAME = "{}"
+STUDENT_ID = "{}"
+MODULE_CODE = "{}"
+MODULE_NAME = "{}"
 
 
 class Ui_MainWindow(object):
@@ -97,14 +102,30 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.pushButton_browse.clicked.connect(self.browse)
         self.pushButton_handin.clicked.connect(self.handin)
+        self.lineEdit_moduleCode.setText(MODULE_CODE)
+        self.lineEdit_moduleCode.setEnabled(False)
+        self.lineEdit_moduleName.setText(MODULE_NAME)
+        self.lineEdit_moduleName.setEnabled(False)
+        self.lineEdit_studentID.setText(STUDENT_ID)
+        self.lineEdit_studentID.setEnabled(False)
+        self.lineEdit_studentName.setText(STUDENT_NAME)
+        self.lineEdit_studentName.setEnabled(False)
 
     def browse(self):
-        pass
+        filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Choose file", "./", "All Files (*);;C File (*.c);;Cpp File (*.cpp);;"
+                                       "Java File (*.java);;Python File (*.py);;Text File (*.txt)")
+        self.lineEdit_chooseFile.setText(filename)
+        try:
+            with open(filename, 'rb') as f:
+                content = f.read().decode('utf-8')
+        except Exception as e:
+            content = ""
+            print(e)
+        self.textEdit_showFileContent.setText(content)
 
     def handin(self):
         pass
-
-# 参考： http://www.science.smith.edu/dftwiki/index.php/PyQt5_Tutorial:_A_Window_Application_with_File_IO
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import cgi
 import io
 import os
 import subprocess
-from http.server import BaseHTTPRequestHandler, HTTPServer, CGIHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 HOST = "127.0.0.1"
 PORT = 8000
@@ -85,6 +85,14 @@ class CaseDefault(BaseCase):
         raise ServerException("Unknown object '{0}'".format(handler.path))
 
 
+def check_if_student_id_in_file(student_id):
+    with open('class-list.txt', 'r') as f:
+        for line in f:
+            if student_id in line:
+                return True
+    return False
+
+
 class RequestHandler(BaseHTTPRequestHandler):
     """Handle request and return page"""
 
@@ -105,6 +113,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         CaseDefault(),
     ]
 
+    base_path = DIR_ROOT
     handin_file_path = DIR_ROOT + DIR_TEMP
     student_data_path = DIR_ROOT + DIR_DATA
 
@@ -149,6 +158,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             self.create_handin_file(student_id)
             self.update_handin_file(student_id, student_name)
+            self.create_student_directory(student_id)
             self.add_student_to_class_list(student_id)
 
         except Exception as e:
@@ -170,19 +180,41 @@ class RequestHandler(BaseHTTPRequestHandler):
         filename = "handin_" + student_id + ".txt"
         if not os.path.exists(self.handin_file_path + filename):
             self.create_handin_file(student_id)
-        # TODO: write content to handin_xxx.txt file
-        # read handin_student_template.py file
+        # write content of handin_student_template.py to handin_xxx.txt
         with open(self.handin_file_path + filename, 'wb') as f:
-            f.write(open('handin_student_template.py', 'rb').read())
+            content_bytes: bytes = open('handin_student_template.py', 'rb').read()
+            # TODO: config the params dynamically
+            content = content_bytes.decode('utf-8').format(
+                        "127.0.0.1",            # host
+                        "8000",                 # port
+                        student_name,           # student name
+                        student_id,             # student id
+                        "CS4815",               # module code
+                        "Computer Graphics",    # module name
+                    ).encode('utf-8')
+            f.write(content)
 
-    def add_student_to_class_list(self, student_id):
+    def create_student_directory(self, student_id):
         """create /data/**student_id**/ directory"""
-        # TODO: if need to add student to database???
         if not os.path.exists(self.student_data_path):
             os.mkdir(self.student_data_path)
         subdir = str(student_id)
         if not os.path.exists(self.student_data_path + subdir):
             os.mkdir(self.student_data_path + subdir)
+
+    @staticmethod
+    def add_student_to_class_list(student_id):
+        """add student id to class list file"""
+        # create class-list.txt file if not exists
+        filename = "class-list.txt"
+        if os.path.exists(filename):
+            append_write = 'a'
+        else:
+            append_write = 'w'
+        if not check_if_student_id_in_file(student_id):
+            class_list = open(filename, append_write)
+            class_list.write(str(student_id) + '\n')
+            class_list.close()
 
     def handle_error(self, msg):
         content = self.error_page.format(path=self.path, msg=msg)
