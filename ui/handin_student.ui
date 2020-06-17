@@ -156,7 +156,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -213,6 +213,29 @@
     </property>
     <property name="text">
      <string>Output</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>402</x>
+      <y>420</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Week Number:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_weekNumber">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>420</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
     </property>
    </widget>
   </widget>

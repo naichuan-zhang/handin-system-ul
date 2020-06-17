@@ -4,12 +4,14 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
+# ****** DYNAMIC CONFIGS ****** #
 HOST = "{}"
 PORT = "{}"
 STUDENT_NAME = "{}"
 STUDENT_ID = "{}"
 MODULE_CODE = "{}"
 MODULE_NAME = "{}"
+# ****** DYNAMIC CONFIGS ****** #
 
 
 class Ui_MainWindow(object):
@@ -56,20 +58,20 @@ class Ui_MainWindow(object):
         self.textEdit_showFileContent = QtWidgets.QTextEdit(self.frame)
         self.textEdit_showFileContent.setGeometry(QtCore.QRect(20, 50, 700, 210))
         self.textEdit_showFileContent.setObjectName("textEdit_showFileContent")
-        self.widget = QtWidgets.QWidget(self.frame)
-        self.widget.setGeometry(QtCore.QRect(20, 10, 701, 31))
-        self.widget.setObjectName("widget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.layoutWidget = QtWidgets.QWidget(self.frame)
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 10, 701, 31))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setSpacing(16)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.label_5 = QtWidgets.QLabel(self.widget)
+        self.label_5 = QtWidgets.QLabel(self.layoutWidget)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout.addWidget(self.label_5)
-        self.lineEdit_chooseFile = QtWidgets.QLineEdit(self.widget)
+        self.lineEdit_chooseFile = QtWidgets.QLineEdit(self.layoutWidget)
         self.lineEdit_chooseFile.setObjectName("lineEdit_chooseFile")
         self.horizontalLayout.addWidget(self.lineEdit_chooseFile)
-        self.pushButton_browse = QtWidgets.QPushButton(self.widget)
+        self.pushButton_browse = QtWidgets.QPushButton(self.layoutWidget)
         self.pushButton_browse.setObjectName("pushButton_browse")
         self.horizontalLayout.addWidget(self.pushButton_browse)
         self.pushButton_handin = QtWidgets.QPushButton(self.centralwidget)
@@ -78,6 +80,12 @@ class Ui_MainWindow(object):
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
         self.label_6.setGeometry(QtCore.QRect(20, 430, 81, 21))
         self.label_6.setObjectName("label_6")
+        self.label_7 = QtWidgets.QLabel(self.centralwidget)
+        self.label_7.setGeometry(QtCore.QRect(402, 420, 111, 28))
+        self.label_7.setObjectName("label_7")
+        self.comboBox_weekNumber = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox_weekNumber.setGeometry(QtCore.QRect(520, 420, 93, 28))
+        self.comboBox_weekNumber.setObjectName("comboBox_weekNumber")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -94,6 +102,7 @@ class Ui_MainWindow(object):
         self.pushButton_browse.setText(_translate("MainWindow", "Browse"))
         self.pushButton_handin.setText(_translate("MainWindow", "Handin"))
         self.label_6.setText(_translate("MainWindow", "Output"))
+        self.label_7.setText(_translate("MainWindow", "Week Number:"))
 
 
 class HandinMainWindow(QMainWindow, Ui_MainWindow):
@@ -110,6 +119,8 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_studentID.setEnabled(False)
         self.lineEdit_studentName.setText(STUDENT_NAME)
         self.lineEdit_studentName.setEnabled(False)
+        self.comboBox_weekNumber.addItems(["w01", "w02", "w03", "w04", "w05", "w06", "w07",
+                                           "w08", "w09", "w10", "w11", "w12", "w13"])
 
     def browse(self):
         filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
@@ -125,6 +136,9 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         self.textEdit_showFileContent.setText(content)
 
     def handin(self):
+        # TODO: Check if week number valid?
+        week_number = self.comboBox_weekNumber.currentText()
+        print(week_number)
         pass
 
 

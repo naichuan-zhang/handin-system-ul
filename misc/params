@@ -1,0 +1,40 @@
+# here's where the main stuff goes
+
+WeekNum:       4
+
+# shouldn't need anything below here...
+stage
+   Command:	/bin/rm -f spin.cc
+   Silent:	y
+egats
+
+stage
+   Tag:		attendance
+   Collect:	spin.cc
+   Message:	Finished copying files.
+   PostReq:	spin.cc
+   Marks:	1
+egats
+
+stage
+   Tag:		compilation
+   Command:	/usr/bin/g++ spin.cc -l GL -l GLU -l glut -o spin
+   PostReq:	spin
+   Marks:	2
+egats
+
+# inspect
+#    InFile:	spin.cc
+#    Tag:         Code Inspection
+# tcepsni
+
+evaluate
+   InFile:	spin    # evaluate this
+   Tag:         Output Visual Inspection
+   OutFile:	marks.w04
+   Marks:       7
+   key=r : reverses direction   : -2 / -1
+   key=d : can set direction    : -2 / -1
+   key=s : can set / vary speed : -2 / -1
+   key=m : can quit from menu   : -1
+etaulave

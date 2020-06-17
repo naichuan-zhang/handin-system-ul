@@ -1,0 +1,47 @@
+#goes in class acct. -- ~cs115/hcs/definitions
+# http://www2.ul.ie/web/WWW/Services/Academic_Calendar
+#week1:	28 Jan 2008
+#week1:	26 Jan 2009
+#week1:	25 Jan 2010
+#week1:	24 Jan 2011
+#week1:	23 Jan 2012
+#week1:	28 Jan 2013
+#week1:	09 Sep 2013
+#week1:	27 Jan 2014  # second time this AY
+#week1:	08 Sep 2014
+#week1:	26 Jan 2015  # second time this AY
+#week1:	07 Sep 2015
+#week1:	25 Jan 2016  # second time this AY
+#week1:	05 Sep 2016
+#gaps:	9,16        # gaps after Week09, Week16 (so Week17 is +2w)
+#week1:	23 Jan 2017  # second time this AY
+#week1:	04 Sep 2017
+#gaps:	9           # gaps after Week09 (so Week10 is +1w)
+#week1:	22 Jan 2018
+#week1:	10 Sep 2018
+#gaps:	12           # gaps after Week09 (so Week10 is +1w)
+#week1:	21 Jan 2019
+gaps:	10           # gaps after Week10 (so Week11 is +1w)
+week1:	27 Jan 2020
+
+
+clist:	cs4115-class-list
+a2s:	s/\D//     # a perl expression to remove the letter of an account,
+		   #  giving the student's ID
+w03:	week03
+w06:	week06
+w07:	week07
+w09:	week09
+w11:	week11
+w13:	week13
+p1:	proj/proj1
+
+MaxSessions:	10   # allow 10 submissions unless changed later (in 'params')
+# OpenDate:	09:00, Wed, Week{%w}   # for the very eager who work ahead
+# DueDate:	09:00, Thu, Week{%w+1} # could also be: 04.10.2000
+# CutoffDate:	18:00, Mon, Week{%w+2}
+# LatePenalty:	10 % per day # week
+# ClassDir:	labs/week{%w}
+# StudDir:	cs4115/labs/week{%w}
+QueryResults:	n # once student's work is inspected results are query-able
+
