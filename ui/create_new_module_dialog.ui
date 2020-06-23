@@ -29,16 +29,30 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>50</y>
-     <width>301</width>
-     <height>121</height>
+     <x>50</x>
+     <y>60</y>
+     <width>294</width>
+     <height>127</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Module Code:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+     </layout>
+    </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>

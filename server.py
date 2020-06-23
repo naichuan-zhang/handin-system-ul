@@ -4,6 +4,15 @@ import os
 import subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+import const
+
+""" ###########################################
+    Server for student to access handin.py file
+"""
+
+# TODO: Dynamically change module code here...
+MODULE_CODE = "cs4115"
+
 HOST = "127.0.0.1"
 PORT = 8000
 
@@ -13,7 +22,8 @@ DIR_ROOT = os.path.dirname(__file__)
 
 # directory to save handin.py file temperately
 DIR_TEMP = "/temp/"
-DIR_DATA = "/data/"
+DIR_DATA = f"/module/{MODULE_CODE}/data/"
+DIR_MODULE = f"/module/{MODULE_CODE}/"
 
 
 class BaseCase(object):
@@ -86,7 +96,8 @@ class CaseDefault(BaseCase):
 
 
 def check_if_student_id_in_file(student_id):
-    with open('class-list.txt', 'r') as f:
+    # TODO: dynamically identify module code
+    with open(DIR_ROOT + DIR_MODULE + 'class-list', 'r') as f:
         for line in f:
             if student_id in line:
                 return True
@@ -185,12 +196,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             content_bytes: bytes = open('handin_student_template.py', 'rb').read()
             # TODO: config the params dynamically
             content = content_bytes.decode('utf-8').format(
-                        "127.0.0.1",            # host
-                        "8000",                 # port
-                        student_name,           # student name
-                        student_id,             # student id
-                        "CS4815",               # module code
-                        "Computer Graphics",    # module name
+                        str(const.HANDIN_HOST),  # host
+                        str(const.HANDIN_PORT),  # port
+                        student_name,            # student name
+                        student_id,              # student id
+                        str(MODULE_CODE),        # module code
+                        "",                      # module name
                     ).encode('utf-8')
             f.write(content)
 
@@ -202,11 +213,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not os.path.exists(self.student_data_path + subdir):
             os.mkdir(self.student_data_path + subdir)
 
-    @staticmethod
-    def add_student_to_class_list(student_id):
+    def add_student_to_class_list(self, student_id):
         """add student id to class list file"""
         # create class-list.txt file if not exists
-        filename = "class-list.txt"
+        filename = DIR_ROOT + DIR_MODULE + "class-list"
         if os.path.exists(filename):
             append_write = 'a'
         else:
