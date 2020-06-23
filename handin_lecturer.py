@@ -66,26 +66,29 @@ class CreateNewModuleDialog(QDialog, Ui_Dialog_Create_New_Module):
         path = "/module/" + module_code + "/"
         module_dir = DIR_ROOT + path
         self.create_files(module_dir)
-        self.update_definitions_file(module_dir)
-        self.update_params_file(module_dir)
+        self.update_definitions_file(
+            academic_year=academic_year,
+            start_semester=start_semester,
+            end_semester=end_semester)
 
-    @staticmethod
-    def update_definitions_file(module_dir):
-        # TODO: update definitions file
-        pass
+    def update_definitions_file(self, **kwargs):
+        # TODO: any more defs to add??
+        with open(self.definitions_path, 'a') as file:
+            for key, value in kwargs.items():
+                print(key, value)
+                file.write(f"{key}={value}\n")
 
-    @staticmethod
-    def create_files(module_dir):
+    def create_files(self, module_dir):
         """create class-list and definitions file"""
         if not os.path.exists(module_dir):
             os.makedirs(module_dir)
-        class_list_path = os.path.join(module_dir, "class-list")
-        if not os.path.exists(class_list_path):
-            with open(class_list_path, "w"):
+        self.class_list_path = os.path.join(module_dir, "class-list")
+        if not os.path.exists(self.class_list_path):
+            with open(self.class_list_path, "w"):
                 pass
-        definitions_path = os.path.join(module_dir, "definitions")
-        if not os.path.exists(definitions_path):
-            with open(definitions_path, "w"):
+        self.definitions_path = os.path.join(module_dir, "definitions")
+        if not os.path.exists(self.definitions_path):
+            with open(self.definitions_path, "w"):
                 pass
 
 
@@ -129,14 +132,13 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         module_dir = DIR_ROOT + path
         self.create_week_directory(module_dir, week_number)
 
-    @staticmethod
-    def create_week_directory(module_dir, week_number):
+    def create_week_directory(self, module_dir, week_number):
         if not os.path.exists(module_dir + week_number):
             print(module_dir + week_number)
             os.mkdir(module_dir + week_number)
-        params_path = os.path.join(module_dir + week_number, "params")
-        if not os.path.exists(params_path):
-            with open(params_path, "w"):
+        self.params_path = os.path.join(module_dir + week_number, "params")
+        if not os.path.exists(self.params_path):
+            with open(self.params_path, "w"):
                 pass
 
 
