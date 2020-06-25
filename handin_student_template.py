@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
+import socket
 import sys
+from datetime import datetime
+from typing import Any
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
-HOST = "{}"
-PORT = "{}"
+# TODO: Change everything back to {} when done
+HOST = "127.0.0.1"
+PORT = "5000"
 STUDENT_NAME = "{}"
 STUDENT_ID = "{}"
-MODULE_CODE = "{}"
+MODULE_CODE = "CS4115"
 MODULE_NAME = "{}"
 # ****** DYNAMIC CONFIGS ****** #
 
@@ -47,9 +52,6 @@ class Ui_MainWindow(object):
         self.lineEdit_studentName.setGeometry(QtCore.QRect(520, 80, 220, 25))
         self.lineEdit_studentName.setText("")
         self.lineEdit_studentName.setObjectName("lineEdit_studentName")
-        self.textBrowser_showResult = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_showResult.setGeometry(QtCore.QRect(20, 470, 750, 200))
-        self.textBrowser_showResult.setObjectName("textBrowser_showResult")
         self.frame = QtWidgets.QFrame(self.centralwidget)
         self.frame.setGeometry(QtCore.QRect(20, 120, 750, 270))
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -86,6 +88,10 @@ class Ui_MainWindow(object):
         self.comboBox_weekNumber = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_weekNumber.setGeometry(QtCore.QRect(520, 420, 93, 28))
         self.comboBox_weekNumber.setObjectName("comboBox_weekNumber")
+        self.textEdit_Output = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEdit_Output.setGeometry(QtCore.QRect(20, 470, 750, 200))
+        self.textEdit_Output.setStyleSheet("color: rgb(102, 102, 255)")
+        self.textEdit_Output.setObjectName("textEdit_Output")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -103,6 +109,11 @@ class Ui_MainWindow(object):
         self.pushButton_handin.setText(_translate("MainWindow", "Handin"))
         self.label_6.setText(_translate("MainWindow", "Output"))
         self.label_7.setText(_translate("MainWindow", "Week Number:"))
+        self.textEdit_Output.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
 
 
 class HandinMainWindow(QMainWindow, Ui_MainWindow):
@@ -121,6 +132,8 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_studentName.setEnabled(False)
         self.comboBox_weekNumber.addItems(["w01", "w02", "w03", "w04", "w05", "w06", "w07",
                                            "w08", "w09", "w10", "w11", "w12", "w13"])
+        self.textEdit_Output.setReadOnly(True)
+        self.textEdit_showFileContent.setReadOnly(True)
 
     def browse(self):
         filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
@@ -136,10 +149,57 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         self.textEdit_showFileContent.setText(content)
 
     def handin(self):
-        # TODO: Check if week number valid?
-        week_number = self.comboBox_weekNumber.currentText()
-        print(week_number)
-        pass
+        try:
+            s = socket.socket()
+            s.connect((HOST, int(PORT)))
+            # check if module exists
+            if module_exists(MODULE_CODE, s):
+                # check if week number valid
+                week_number = self.comboBox_weekNumber.currentText()
+                if week_number_valid(MODULE_CODE, week_number, s):
+                    self.output(f"Submitting code to {MODULE_CODE}::{week_number}")
+                    # TODO: CONTINUE ...
+                    pass
+                else:
+                    self.output(f"{week_number} not valid for {MODULE_CODE}", flag="ERROR")
+            else:
+                self.output(f"{MODULE_CODE} not exist!", flag="ERROR")
+        except Exception as e:
+            self.output(e, flag="ERROR")
+
+    def output(self, text, flag: str = "INFO"):
+        self.textEdit_Output.append(f"---{datetime.now().strftime('%d/%m/%Y %H:%M:%S')}---")
+        if flag.upper() == "INFO":
+            blackText = "<span style=\"color:#000000;\" >"
+            blackText += text
+            blackText += "</span>"
+            self.textEdit_Output.append(blackText)
+        elif flag.upper() == "ERROR":
+            redText = "<span style=\"color:#ff0000;\" >"
+            redText += f"ERROR: {text}"
+            redText += "</span>"
+            self.textEdit_Output.append(redText)
+
+
+def module_exists(module_code, s: socket.socket):
+    s.sendall(b"Check module exists")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        result = s.recv(1024).decode()
+        if result == "True":
+            return True
+    return False
+
+
+def week_number_valid(module_code, week_number, s: socket.socket):
+    s.sendall(b"Checking Assignment Week")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        result = s.recv(1024).decode()
+        if result == "True":
+            return True
+    return False
 
 
 if __name__ == '__main__':

@@ -15,10 +15,6 @@ def get_file_content(path, mode='r'):
     return content
 
 
-def get_assignment_weeks() -> list:
-    return []
-
-
 def Main():
     s = socket.socket()
     s.bind((host, port))
@@ -55,6 +51,9 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Checking Assignment Week":
         time.sleep(.1)
         checkIfAssignmentWeek(name, sock)
+    elif msg == "Check module exists":
+        time.sleep(.1)
+        checkIfModuleExists(name, sock)
     elif msg == "What is semester start date":
         time.sleep(.1)
         getSemStartDate(name, sock)
@@ -107,13 +106,34 @@ def recvCode(name, sock):
     RetrCommand(name, sock)
 
 
+def checkIfModuleExists(name, sock):
+    """check if the moduleCode exists"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/"
+    if os.path.exists(path):
+        modules = [name.lower() for name in os.listdir(path)]
+        if module_code.lower() in modules:
+            sock.sendall(b"True")
+        else:
+            sock.sendall(b"False")
+    else:
+        sock.sendall(b"False")
+    RetrCommand(name, sock)
+
+
 def checkIfAssignmentWeek(name, sock):
     """check if an assignment week"""
     sock.sendall(b"OK")
-    week = sock.recv(1024).decode()
-    available_weeks = get_assignment_weeks()
-    if week in available_weeks:
-        sock.sendall(b"True")
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/"
+    if os.path.exists(path):
+        weeks = [name for name in os.listdir(path)]
+        if week_number in weeks:
+            sock.sendall(b"True")
+        else:
+            sock.sendall(b"False")
     else:
         sock.sendall(b"False")
     RetrCommand(name, sock)
