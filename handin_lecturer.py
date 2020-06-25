@@ -1,16 +1,44 @@
 import os
 import re
 import sys
+import yaml
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDate, QRegExp
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QMainWindow, QDialog
+from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox
 
 from const import DIR_ROOT
 from ui.impl.create_new_module_dialog import Ui_Dialog as Ui_Dialog_Create_New_Module
 from ui.impl.create_weekly_assignment_dialog import Ui_Dialog as Ui_Dialog_Create_Weekly_Assignment
 from ui.impl.handin_lecturer_main_window import Ui_MainWindow as Ui_MainWindow
+
+
+def check_if_module_exists(module_code: str) -> bool:
+    path = DIR_ROOT + "/module/"
+    if os.path.exists(path):
+        modules = [name.lower() for name in os.listdir(path)]
+        if module_code.lower() in modules:
+            return True
+    return False
+
+
+def check_if_week_exists(module_code: str, week_number: str) -> bool:
+    path = DIR_ROOT + "/module/" + module_code + "/"
+    if os.path.exists(path):
+        weeks = [name for name in os.listdir(path)]
+        if week_number in weeks:
+            return True
+    return False
+
+
+def create_message_box(text):
+    msgBox = QMessageBox()
+    msgBox.setIcon(QMessageBox.Information)
+    msgBox.setText(text)
+    msgBox.setWindowTitle("Message")
+    msgBox.setStandardButtons(QMessageBox.Ok)
+    msgBox.exec()
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -63,20 +91,20 @@ class CreateNewModuleDialog(QDialog, Ui_Dialog_Create_New_Module):
         academic_year: str = self.lineEdit_academicYear.text().strip()
         start_semester: str = self.dateEdit_startSemester.text().strip()
         end_semester: str = self.dateEdit_endSemester.text().strip()
-        path = "/module/" + module_code + "/"
-        module_dir = DIR_ROOT + path
-        self.create_files(module_dir)
-        self.update_definitions_file(
-            academic_year=academic_year,
-            start_semester=start_semester,
-            end_semester=end_semester)
+
+        if not check_if_module_exists(module_code=module_code):
+            path = "/module/" + module_code + "/"
+            module_dir = DIR_ROOT + path
+            self.create_files(module_dir)
+            self.update_definitions_file(
+                academicYear=academic_year, startSemester=start_semester, endSemester=end_semester)
+        else:
+            create_message_box(f"Module {module_code} already exists!")
 
     def update_definitions_file(self, **kwargs):
         # TODO: any more defs to add??
         with open(self.definitions_path, 'a') as file:
-            for key, value in kwargs.items():
-                print(key, value)
-                file.write(f"{key}={value}\n")
+            yaml.dump(kwargs, file, default_flow_style=False)
 
     def create_files(self, module_dir):
         """create class-list and definitions file"""
@@ -86,7 +114,7 @@ class CreateNewModuleDialog(QDialog, Ui_Dialog_Create_New_Module):
         if not os.path.exists(self.class_list_path):
             with open(self.class_list_path, "w"):
                 pass
-        self.definitions_path = os.path.join(module_dir, "definitions")
+        self.definitions_path = os.path.join(module_dir, "definitions.yaml")
         if not os.path.exists(self.definitions_path):
             with open(self.definitions_path, "w"):
                 pass
@@ -128,18 +156,34 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
     def create_weekly_assignment(self):
         module_code = self.comboBox_moduleCode.currentText().strip()
         week_number = self.comboBox_weekNumber.currentText().strip()
-        path = "/module/" + module_code + "/"
-        module_dir = DIR_ROOT + path
-        self.create_week_directory(module_dir, week_number)
+        start_day = self.dateTimeEdit_startDay.text().strip()
+        end_day = self.dateTimeEdit_startDay.text().strip()
+        cutoff_day = self.dateTimeEdit_cutoffDay.text().strip()
+        penalty_per_day = int(self.lineEdit_penaltyPerDay.text())
+
+        if not check_if_week_exists(module_code=module_code, week_number=week_number):
+            path = "/module/" + module_code + "/"
+            module_dir = DIR_ROOT + path
+            self.create_week_directory(module_dir, week_number)
+            self.update_params_file(
+                moduleCode=module_code, weekNumber=week_number, startDay=start_day,
+                endDay=end_day, cutoffDay=cutoff_day, penaltyPerDay=penalty_per_day)
+        else:
+            create_message_box(f"{week_number} for module {module_code} already exists!")
 
     def create_week_directory(self, module_dir, week_number):
         if not os.path.exists(module_dir + week_number):
             print(module_dir + week_number)
             os.mkdir(module_dir + week_number)
-        self.params_path = os.path.join(module_dir + week_number, "params")
+        self.params_path = os.path.join(module_dir + week_number, "params.yaml")
         if not os.path.exists(self.params_path):
             with open(self.params_path, "w"):
                 pass
+
+    def update_params_file(self, **kwargs):
+        with open(self.params_path, 'a') as file:
+            # TODO: any more params to add??
+            yaml.dump(kwargs, file, default_flow_style=False)
 
 
 if __name__ == '__main__':

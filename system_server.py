@@ -77,7 +77,7 @@ def authentication_of_student(name, sock):
     module_code = sock.recv(1024).decode().lower()
     # get student id
     student_id = sock.recv(1024).decode()
-    class_list_file_path = get_class_list_file_path(module_code=module_code)
+    class_list_file_path = const.get_class_list_file_path(module_code=module_code)
     if os.path.exists(class_list_file_path):
         with open(class_list_file_path, 'r') as f:
             for line in f:
