@@ -206,12 +206,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             f.write(content)
 
     def create_student_directory(self, student_id):
-        """create /data/**student_id**/ directory"""
+        """create /data/**student_id**/ directory AND all weekNumbers directory"""
         if not os.path.exists(self.student_data_path):
             os.mkdir(self.student_data_path)
         subdir = str(student_id)
         if not os.path.exists(self.student_data_path + subdir):
             os.mkdir(self.student_data_path + subdir)
+        folders = ["w01", "w02", "w03", "w04", "w05", "w06",
+                   "w07", "w08", "w09", "w10", "w11", "w12", "w13"]
+        for folder in folders:
+            week_dir = self.student_data_path + subdir + "/" + folder
+            if not os.path.exists(week_dir):
+                os.mkdir(week_dir)
 
     def add_student_to_class_list(self, student_id):
         """add student id to class list file"""

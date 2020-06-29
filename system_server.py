@@ -3,6 +3,8 @@ import socket
 import threading
 import time
 
+from conda_env.yaml import yaml
+
 import const
 
 host = const.HANDIN_HOST
@@ -15,16 +17,12 @@ def get_file_content(path, mode='r'):
     return content
 
 
-def Main():
-    s = socket.socket()
-    s.bind((host, port))
-    s.listen(5)
-    print("Server started ...")
-    while True:
-        c, addr = s.accept()
-        print("client connected ip: <" + str(addr) + ">")
-        t = threading.Thread(target=RetrCommand, args=("RetrCommand", c))
-        t.start()
+def get_total_attempts(module_code, week_number) -> int:
+    # read /**weekNum**/params.yaml file to get totalAttempts value
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/params.yaml"
+    with open(path, 'r') as stream:
+        data: dict = yaml.safe_load(stream)
+    return data.get("totalAttempts")
 
 
 def RetrCommand(name, sock: socket.socket):
@@ -36,9 +34,9 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Authentication":
         time.sleep(.1)
         authentication_of_student(name, sock)
-    elif msg == "Check for attempts":
+    elif msg == "Check attempts left":
         time.sleep(.1)
-        check_for_attempts(name, sock)
+        checkAttemptsLeft(name, sock)
     elif msg == "What code is required":
         time.sleep(.1)
         code_requirements(name, sock)
@@ -60,6 +58,12 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Get most recent attempt":
         time.sleep(.1)
         getRecentAttempt(name, sock)
+    elif msg == "Create vars file":
+        time.sleep(.1)
+        createVarsFile(name, sock)
+    elif msg == "Init vars file":
+        time.sleep(.1)
+        initVarsFile(name, sock)
     else:
         print(f"Unknown Message: {msg}")
 
@@ -73,21 +77,38 @@ def authentication_of_student(name, sock):
     """check if student_id exist in the class list"""
     sock.sendall(b"OK")
     # get current module code
-    module_code = sock.recv(1024).decode().lower()
+    module_code = sock.recv(1024).decode()
     # get student id
     student_id = sock.recv(1024).decode()
-    class_list_file_path = const.get_class_list_file_path(module_code=module_code)
+    class_list_file_path = const.get_class_list_file_path(module_code=module_code.lower())
     if os.path.exists(class_list_file_path):
         with open(class_list_file_path, 'r') as f:
             for line in f:
                 if student_id in line:
-                    sock.sendall(b'Authenticated')
+                    sock.sendall(b"True")
                     print(student_id + " has been authenticated ...")
+                    RetrCommand(name, sock)
+                    return
+    sock.sendall(b"False")
     RetrCommand(name, sock)
 
 
-def check_for_attempts(name, sock):
-    pass
+def checkAttemptsLeft(name, sock):
+    """check number of attempts left"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    student_id = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    # read vars.yaml file to get attemptsLeft value
+    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
+                + student_id + "/" + week_number + "/"
+    filename = path + "vars.yaml"
+    with open(filename, 'r') as stream:
+        data: dict = yaml.safe_load(stream)
+    if data.get("attemptsLeft"):
+        sock.sendall(str(data.get("attemptsLeft")).encode('utf-8'))
+    else:
+        sock.sendall(b"False")
     RetrCommand(name, sock)
 
 
@@ -149,5 +170,49 @@ def getRecentAttempt(name, sock):
     RetrCommand(name, sock)
 
 
+def createVarsFile(name, sock):
+    """Create vars file for a specific student"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    student_id = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
+                + student_id + "/" + week_number + "/"
+    filename = path + "vars.yaml"
+    if not os.path.exists(filename):
+        with open(filename, 'w'):
+            pass
+        sock.sendall(b"Success")
+        RetrCommand(name, sock)
+        return
+    sock.sendall(b"Failed")
+    RetrCommand(name, sock)
+
+
+def initVarsFile(name, sock):
+    """init vars.yaml file"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    student_id = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
+                + student_id + "/" + week_number + "/"
+    filename = path + "vars.yaml"
+    data = {
+        "attemptsLeft": get_total_attempts(module_code, week_number),
+    }
+    with open(filename, 'w') as f:
+        yaml.dump(data, f, default_flow_style=False)
+    RetrCommand(name, sock)
+
+
 if __name__ == '__main__':
-    Main()
+    s = socket.socket()
+    s.bind((host, port))
+    s.listen(5)
+    print("Server started ...")
+    while True:
+        c, addr = s.accept()
+        print("client connected ip: <" + str(addr) + ">")
+        t = threading.Thread(target=RetrCommand, args=("RetrCommand", c))
+        t.start()

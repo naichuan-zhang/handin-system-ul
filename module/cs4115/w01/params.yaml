@@ -1,6 +1,10 @@
-cutoffDay: 6/26/2020 12:00 AM
-endDay: 6/26/2020 12:00 AM
+cutoffDay: 6/29/2020 12:00 AM
+endDay: 6/29/2020 12:00 AM
 moduleCode: cs4115
 penaltyPerDay: 1
-startDay: 6/26/2020 12:00 AM
+startDay: 6/29/2020 12:00 AM
 weekNumber: w01
+
+
+# TODO: new configs - add them to lecturer.py
+totalAttempts: 10

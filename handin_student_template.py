@@ -118,7 +118,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         super(HandinMainWindow, self).__init__()
         self.setupUi(self)
         self.pushButton_browse.clicked.connect(self.browse)
-        self.pushButton_handin.clicked.connect(self.handin)
+        self.pushButton_handin.clicked.connect(self.check_handin)
         self.lineEdit_moduleCode.setText(MODULE_CODE)
         self.lineEdit_moduleCode.setEnabled(False)
         self.lineEdit_moduleName.setText(MODULE_NAME)
@@ -154,7 +154,8 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             print(e)
         self.textEdit_showFileContent.setText(content)
 
-    def handin(self):
+    def check_handin(self):
+        global initVars
         try:
             s = socket.socket()
             s.connect((HOST, int(PORT)))
@@ -164,14 +165,36 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                 week_number = self.comboBox_weekNumber.currentText()
                 if week_number_valid(MODULE_CODE, week_number, s):
                     self.output("Submitting code to %s::%s" % (MODULE_CODE, week_number))
-                    # TODO: CONTINUE ...
-                    pass
+                    # check student id authentication
+                    if check_student_authentication(MODULE_CODE, STUDENT_ID, s):
+                        self.output("Student ID: %s has been authenticated" % STUDENT_ID)
+                        # create a vars.yaml file to store info of a specific student
+                        result = create_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
+                        if result == "Success":
+                            print("Vars file has been created!!!")
+                            initVars = True
+                        elif result == "Failed":
+                            print("Vars file already exists!!!")
+                            initVars = False
+                        self.run_handin(week_number, s, initVars)
+                    else:
+                        self.output("Student ID: %s not authenticated" % STUDENT_ID, flag="ERROR")
                 else:
                     self.output("%s not valid for %s" % (week_number, MODULE_CODE), flag="ERROR")
             else:
                 self.output("%s not exist!" % MODULE_CODE, flag="ERROR")
         except Exception as e:
             self.output(str(e), flag="ERROR")
+
+    def run_handin(self, week_number, s: socket.socket, init_vars: bool):
+        # initialize vars.yaml file
+        if init_vars:
+            init_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
+        # get attempts left
+        attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
+        # TODO: Continue .....
+        # TODO: when handin success, attemptsLeft - 1
+        pass
 
     def output(self, text: str, flag: str = "INFO"):
         df = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
@@ -208,6 +231,57 @@ def week_number_valid(module_code, week_number, s: socket.socket):
         if result == "True":
             return True
     return False
+
+
+def check_student_authentication(module_code, student_id, s: socket.socket):
+    s.sendall(b"Authentication")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(student_id.encode())
+        is_auth = s.recv(1024).decode()
+        if is_auth == "True":
+            return True
+    return False
+
+
+def create_vars_file(module_code, student_id, week_number, s: socket.socket) -> str:
+    """create a vars.yaml file to store info of a specific student"""
+    s.sendall(b"Create vars file")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(student_id.encode())
+        s.sendall(week_number.encode())
+        # Success or Failed
+        result = s.recv(1024).decode()
+        return result
+
+
+def init_vars_file(module_code, student_id, week_number, s: socket.socket):
+    s.sendall(b"Init vars file")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(student_id.encode())
+        s.sendall(week_number.encode())
+
+
+def check_attempts_left(module_code, student_id, week_number, s: socket.socket) -> int:
+    s.sendall(b"Check attempts left")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(student_id.encode())
+        s.sendall(week_number.encode())
+        attempts_left = s.recv(1024).decode()
+        if attempts_left != "False":
+            if 1 <= int(attempts_left) <= 10:
+                return int(attempts_left)
+            else:
+                print("you have no attempts left")
+                print(attempts_left)
+                return False
+        else:
+            print("Error when acquiring attemptsLeft value")
+            return False
+    return 0
 
 
 if __name__ == '__main__':
