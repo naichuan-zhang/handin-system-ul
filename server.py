@@ -194,12 +194,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         # write content of handin_student_template.py to handin_xxx.txt
         with open(self.handin_file_path + filename, 'wb') as f:
             content_bytes: bytes = open('handin_student_template.py', 'rb').read()
-            # TODO: config the params dynamically
+            # TODO: need to config the params dynamically here!!!!!
             content = content_bytes.decode('utf-8').format(
                         str(const.HANDIN_HOST),  # host
                         str(const.HANDIN_PORT),  # port
-                        student_name,            # student name
-                        student_id,              # student id
+                        str(student_name),       # student name
+                        str(student_id),         # student id
                         str(MODULE_CODE),        # module code
                         "",                      # module name
                     ).encode('utf-8')

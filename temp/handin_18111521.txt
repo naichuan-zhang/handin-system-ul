@@ -7,13 +7,12 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
-# TODO: change everything back to {} later !!!!!
 HOST = "127.0.0.1"
 PORT = "5000"
 STUDENT_NAME = "Naichuan Zhang"
 STUDENT_ID = "18111521"
-MODULE_CODE = "CS4115"
-MODULE_NAME = "{}"
+MODULE_CODE = "cs4115"
+MODULE_NAME = ""
 # ****** DYNAMIC CONFIGS ****** #
 
 
@@ -131,15 +130,6 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                                            "w08", "w09", "w10", "w11", "w12", "w13"])
         self.textEdit_Output.setReadOnly(True)
         self.textEdit_showFileContent.setReadOnly(True)
-        self.lineEdit_chooseFile.setReadOnly(True)
-        self.lineEdit_chooseFile.textChanged.connect(self.disable_handin)
-        self.pushButton_handin.setEnabled(False)
-
-    def disable_handin(self):
-        if len(self.lineEdit_chooseFile.text()) > 0:
-            self.pushButton_handin.setEnabled(True)
-        else:
-            self.pushButton_handin.setEnabled(False)
 
     def browse(self):
         filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
@@ -171,9 +161,9 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.output("%s not exist!" % MODULE_CODE, flag="ERROR")
         except Exception as e:
-            self.output(str(e), flag="ERROR")
+            self.output(e, flag="ERROR")
 
-    def output(self, text: str, flag: str = "INFO"):
+    def output(self, text, flag: str = "INFO"):
         df = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
         self.textEdit_Output.append("---" + df + "---")
         if flag.upper() == "INFO":
@@ -183,8 +173,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             self.textEdit_Output.append(blackText)
         elif flag.upper() == "ERROR":
             redText = "<span style=\"color:#ff0000;\" >"
-            redText += "ERROR: "
-            redText += text
+            redText += "ERROR: " + text
             redText += "</span>"
             self.textEdit_Output.append(redText)
 
