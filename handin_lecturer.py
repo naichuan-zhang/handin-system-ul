@@ -128,13 +128,15 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         self.dateTimeEdit_endDay.setDate(QDate.currentDate())
         self.dateTimeEdit_cutoffDay.setDate(QDate.currentDate())
         self.lineEdit_penaltyPerDay.setPlaceholderText('0')
-        # only allow Integers for PenaltyPerDay
+        # only allow Integers for PenaltyPerDay and totalAttempts
         regex = QRegExp("\\d+")
         self.lineEdit_penaltyPerDay.setValidator(QRegExpValidator(regex))
+        self.lineEdit_totalAttempts.setValidator(QRegExpValidator(regex))
         self.accepted.connect(lambda: self.create_weekly_assignment())
         self.buttonBox.setEnabled(False)
         self.comboBox_moduleCode.editTextChanged.connect(self.disable_buttonbox)
         self.lineEdit_penaltyPerDay.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_totalAttempts.textChanged.connect(self.disable_buttonbox)
         # set up initial available module codes
         self.comboBox_moduleCode.addItems(self.get_module_codes())
         # set up week numbers
@@ -148,7 +150,8 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
 
     def disable_buttonbox(self):
         if len(self.lineEdit_penaltyPerDay.text()) > 0 \
-                and len(self.comboBox_moduleCode.currentText()) > 0:
+                and len(self.comboBox_moduleCode.currentText()) > 0 \
+                and len(self.lineEdit_totalAttempts.text()) > 0:
             self.buttonBox.setEnabled(True)
         else:
             self.buttonBox.setEnabled(False)
@@ -159,7 +162,8 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         start_day = self.dateTimeEdit_startDay.text().strip()
         end_day = self.dateTimeEdit_startDay.text().strip()
         cutoff_day = self.dateTimeEdit_cutoffDay.text().strip()
-        penalty_per_day = int(self.lineEdit_penaltyPerDay.text())
+        penalty_per_day = int(self.lineEdit_penaltyPerDay.text().strip())
+        total_attempts = int(self.lineEdit_totalAttempts.text().strip())
 
         if not check_if_week_exists(module_code=module_code, week_number=week_number):
             path = "/module/" + module_code + "/"
@@ -167,7 +171,8 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             self.create_week_directory(module_dir, week_number)
             self.update_params_file(
                 moduleCode=module_code, weekNumber=week_number, startDay=start_day,
-                endDay=end_day, cutoffDay=cutoff_day, penaltyPerDay=penalty_per_day)
+                endDay=end_day, cutoffDay=cutoff_day, penaltyPerDay=penalty_per_day,
+                totalAttempts=total_attempts)
         else:
             create_message_box(f"{week_number} for module {module_code} already exists!")
 

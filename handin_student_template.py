@@ -193,7 +193,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         # get attempts left
         attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
         # TODO: Continue .....
-        # TODO: when handin success, attemptsLeft - 1
+        # TODO: when handin success, attemptsLeft - 1 ...
         pass
 
     def output(self, text: str, flag: str = "INFO"):

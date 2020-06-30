@@ -13,9 +13,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(400, 300)
+        Dialog.resize(400, 400)
+        Dialog.setMinimumSize(QtCore.QSize(400, 400))
+        Dialog.setMaximumSize(QtCore.QSize(400, 400))
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(30, 330, 341, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
@@ -66,6 +68,12 @@ class Ui_Dialog(object):
         self.comboBox_weekNumber = QtWidgets.QComboBox(Dialog)
         self.comboBox_weekNumber.setGeometry(QtCore.QRect(290, 20, 81, 22))
         self.comboBox_weekNumber.setObjectName("comboBox_weekNumber")
+        self.label_7 = QtWidgets.QLabel(Dialog)
+        self.label_7.setGeometry(QtCore.QRect(30, 230, 121, 16))
+        self.label_7.setObjectName("label_7")
+        self.lineEdit_totalAttempts = QtWidgets.QLineEdit(Dialog)
+        self.lineEdit_totalAttempts.setGeometry(QtCore.QRect(170, 230, 113, 21))
+        self.lineEdit_totalAttempts.setObjectName("lineEdit_totalAttempts")
 
         self.retranslateUi(Dialog)
         self.buttonBox.accepted.connect(Dialog.accept)
@@ -81,3 +89,4 @@ class Ui_Dialog(object):
         self.label_4.setText(_translate("Dialog", "Cutoff Day:"))
         self.label_5.setText(_translate("Dialog", "Penalty per day:"))
         self.label_6.setText(_translate("Dialog", "Week:"))
+        self.label_7.setText(_translate("Dialog", "Total Attempts:"))

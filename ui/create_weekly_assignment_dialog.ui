@@ -7,8 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>400</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>400</width>
+    <height>400</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Create Weekly Assignment</string>
@@ -17,7 +29,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>240</y>
+     <y>330</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -179,6 +191,29 @@
      <y>20</y>
      <width>81</width>
      <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>230</y>
+     <width>121</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Total Attempts:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_totalAttempts">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>230</y>
+     <width>113</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
