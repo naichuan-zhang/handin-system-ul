@@ -193,7 +193,12 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             init_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
         # get attempts left
         attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
-        late_penalty: int = check_late_penalty(MODULE_CODE, week_number, s)
+        late_penalty = check_late_penalty(MODULE_CODE, week_number, s)
+        if isinstance(late_penalty, str):
+            self.output(late_penalty, flag="ERROR")
+        if isinstance(late_penalty, int):
+            self.output("Penalty applied : " + str(late_penalty))
+            pass
         # TODO: Continue .....
         # TODO: when handin success, attemptsLeft - 1 ...
         pass
@@ -328,8 +333,16 @@ def check_late_penalty(module_code, week_number, s):
     end_day: datetime = datetime.strptime(end_day, dt_format)
     cutoff_day: datetime = datetime.strptime(cutoff_day, dt_format)
     now: datetime = datetime.now()
-    print(now - start_day)
-    # TODO: continue ...
+    if now < start_day:
+        return "Submission to early!"
+    elif now > cutoff_day:
+        return "You have missed the cutoff day, you are not allow to submit!"
+    elif start_day < now < end_day:
+        # no late penalty applied
+        return 0
+    elif end_day < now < cutoff_day:
+        hours_delta = (now - end_day).seconds // 3600
+        return int((hours_delta // 24 + 1) * penalty_per_day)
     return -1
 
 
