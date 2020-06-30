@@ -2,6 +2,8 @@ import os
 import socket
 import threading
 import time
+from datetime import datetime
+
 import yaml
 
 import const
@@ -63,18 +65,9 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Init vars file":
         time.sleep(.1)
         initVarsFile(name, sock)
-    elif msg == "Get penalty per day":
+    elif msg == "Check late penalty":
         time.sleep(.1)
-        getPenaltyPerDay(name, sock)
-    elif msg == "Get start day":
-        time.sleep(.1)
-        getStartDay(name, sock)
-    elif msg == "Get end day":
-        time.sleep(.1)
-        getEndDay(name, sock)
-    elif msg == "Get cutoff day":
-        time.sleep(.1)
-        getCutoffDay(name, sock)
+        checkLatePenalty(name, sock)
     else:
         print(f"Unknown Message: {msg}")
 
@@ -218,68 +211,96 @@ def initVarsFile(name, sock):
     RetrCommand(name, sock)
 
 
-def getPenaltyPerDay(name, sock):
-    """get penalty per day for a module"""
+def checkLatePenalty(name, sock):
+    """Get late penalty"""
+    sock.sendall(b"OK")
     module_code = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
+
+    penalty_per_day: str = getPenaltyPerDay(module_code, week_number)
+    if penalty_per_day == "False":
+        sock.sendall(b"ERROR: penaltyPerDay doesn't exist!!!")
+
+    start_day: str = getStartDay(module_code, week_number)
+    if start_day == "False":
+        sock.sendall(b"ERROR: startDay doesn't exist!!!")
+
+    end_day: str = getEndDay(module_code, week_number)
+    if end_day == "False":
+        sock.sendall(b"ERROR: endDay doesn't exist!!!")
+
+    cutoff_day: str = getCutoffDay(module_code, week_number)
+    if cutoff_day == "False":
+        sock.sendall(b"ERROR: cutoffDay doesn't exist!!!")
+
+    dt_format = "%d/%m/%Y %H:%M"
+    start_day: datetime = datetime.strptime(start_day, dt_format)
+    end_day: datetime = datetime.strptime(end_day, dt_format)
+    cutoff_day: datetime = datetime.strptime(cutoff_day, dt_format)
+    now: datetime = datetime.now()
+    if now < start_day:
+        sock.sendall(b"Submission to early!")
+    elif now > cutoff_day:
+        sock.sendall(b"You have missed the cutoff day, you are not allow to submit now!")
+    elif start_day < now < end_day:
+        # no late penalty applied
+        sock.sendall(b"0")
+    elif end_day < now < cutoff_day:
+        hours_delta = (now - end_day).seconds // 3600
+        sock.sendall(str((hours_delta // 24 + 1) * penalty_per_day).encode('utf-8'))
+    RetrCommand(name, sock)
+
+
+def getPenaltyPerDay(module_code, week_number):
+    """get penalty per day for a module"""
     path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
     filename = path + "params.yaml"
     with open(filename, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("penaltyPerDay"):
-        sock.sendall(str(data.get("penaltyPerDay")).encode('utf-8'))
+        return str(data.get("penaltyPerDay"))
     else:
-        sock.sendall(b"False")
         print("ERROR: penaltyPerDay doesn't exist!!!")
-    RetrCommand(name, sock)
+        return "False"
 
 
-def getStartDay(name, sock):
+def getStartDay(module_code, week_number):
     """get start day for a module"""
-    module_code = sock.recv(1024).decode()
-    week_number = sock.recv(1024).decode()
     path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
     filename = path + "params.yaml"
     with open(filename, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("startDay"):
-        sock.sendall(str(data.get("startDay")).encode('utf-8'))
+        return str(data.get("startDay"))
     else:
-        sock.sendall(b"False")
         print("ERROR: startDay doesn't exist!!!")
-    RetrCommand(name, sock)
+        return "False"
 
 
-def getEndDay(name, sock):
+def getEndDay(module_code, week_number):
     """get end day for a module"""
-    module_code = sock.recv(1024).decode()
-    week_number = sock.recv(1024).decode()
     path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
     filename = path + "params.yaml"
     with open(filename, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("endDay"):
-        sock.sendall(str(data.get("endDay")).encode('utf-8'))
+        return str(data.get("endDay"))
     else:
-        sock.sendall(b"False")
         print("ERROR: endDay doesn't exist!!!")
-    RetrCommand(name, sock)
+        return "False"
 
 
-def getCutoffDay(name, sock):
+def getCutoffDay(module_code, week_number):
     """get cutoff day for a module"""
-    module_code = sock.recv(1024).decode()
-    week_number = sock.recv(1024).decode()
     path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
     filename = path + "params.yaml"
     with open(filename, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("cutoffDay"):
-        sock.sendall(str(data.get("cutoffDay")).encode('utf-8'))
+        return str(data.get("cutoffDay"))
     else:
-        sock.sendall(b"False")
         print("ERROR: cutoffDay doesn't exist!!!")
-    RetrCommand(name, sock)
+        return "False"
 
 
 if __name__ == '__main__':

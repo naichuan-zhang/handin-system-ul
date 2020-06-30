@@ -15,6 +15,8 @@ STUDENT_NAME = "Naichuan Zhang"
 STUDENT_ID = "18111521"
 MODULE_CODE = "CS4115"
 MODULE_NAME = "{}"
+
+
 # ****** DYNAMIC CONFIGS ****** #
 
 
@@ -108,10 +110,11 @@ class Ui_MainWindow(object):
         self.pushButton_handin.setText(_translate("MainWindow", "Handin"))
         self.label_6.setText(_translate("MainWindow", "Output"))
         self.label_7.setText(_translate("MainWindow", "Week Number:"))
-        self.textEdit_Output.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" />"
-"</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.textEdit_Output.setHtml(_translate("MainWindow",
+                                                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+                                                "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
 
 
 class HandinMainWindow(QMainWindow, Ui_MainWindow):
@@ -292,58 +295,16 @@ def check_attempts_left(module_code, student_id, week_number, s: socket.socket) 
 
 
 def check_late_penalty(module_code, week_number, s):
-    s.sendall(b"Get penalty per day")
-    time.sleep(.1)
-    s.sendall(str(module_code).encode())
-    time.sleep(.1)
-    s.sendall(str(week_number).encode())
-    penalty_per_day = s.recv(1024).decode()
-    if penalty_per_day == "False":
-        print("ERROR: penaltyPerDay doesn't exist!!!")
-        return -1
-    s.sendall(b"Get start day")
-    time.sleep(.1)
-    s.sendall(module_code.encode())
-    time.sleep(.1)
-    s.sendall(week_number.encode())
-    start_day = s.recv(1024).decode()
-    if start_day == "False":
-        print("ERROR: startDay doesn't exist!!!")
-        return -1
-    s.sendall(b"Get end day")
-    time.sleep(.1)
-    s.sendall(module_code.encode())
-    time.sleep(.1)
-    s.sendall(week_number.encode())
-    end_day = s.recv(1024).decode()
-    if end_day == "False":
-        print("ERROR: endDay doesn't exist!!!")
-        return -1
-    s.sendall(b"Get cutoff day")
-    time.sleep(.1)
-    s.sendall(module_code.encode())
-    time.sleep(.1)
-    s.sendall(week_number.encode())
-    cutoff_day = s.recv(1024).decode()
-    if cutoff_day == "False":
-        print("ERROR: cutoffDay doesn't exist!!!")
-        return -1
-    dt_format = "%d/%m/%Y %H:%M"
-    start_day: datetime = datetime.strptime(start_day, dt_format)
-    end_day: datetime = datetime.strptime(end_day, dt_format)
-    cutoff_day: datetime = datetime.strptime(cutoff_day, dt_format)
-    now: datetime = datetime.now()
-    if now < start_day:
-        return "Submission to early!"
-    elif now > cutoff_day:
-        return "You have missed the cutoff day, you are not allow to submit!"
-    elif start_day < now < end_day:
-        # no late penalty applied
-        return 0
-    elif end_day < now < cutoff_day:
-        hours_delta = (now - end_day).seconds // 3600
-        return int((hours_delta // 24 + 1) * penalty_per_day)
-    return -1
+    s.sendall(b"Check late penalty")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        late_penalty = s.recv(1024).decode()
+        try:
+            late_penalty = int(late_penalty)
+        except:
+            late_penalty = str(late_penalty)
+        return late_penalty
 
 
 if __name__ == '__main__':
