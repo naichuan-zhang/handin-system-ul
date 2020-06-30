@@ -2,8 +2,7 @@ import os
 import socket
 import threading
 import time
-
-from conda_env.yaml import yaml
+import yaml
 
 import const
 
@@ -26,8 +25,8 @@ def get_total_attempts(module_code, week_number) -> int:
 
 
 def RetrCommand(name, sock: socket.socket):
-    data = sock.recv(1024)
-    msg = data.decode()
+    msg = sock.recv(1024).decode()
+    print("Received command \"%s\"" % msg)
     if msg == "File Request":
         time.sleep(.1)
         RetrFile(name, sock)
@@ -64,6 +63,18 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Init vars file":
         time.sleep(.1)
         initVarsFile(name, sock)
+    elif msg == "Get penalty per day":
+        time.sleep(.1)
+        getPenaltyPerDay(name, sock)
+    elif msg == "Get start day":
+        time.sleep(.1)
+        getStartDay(name, sock)
+    elif msg == "Get end day":
+        time.sleep(.1)
+        getEndDay(name, sock)
+    elif msg == "Get cutoff day":
+        time.sleep(.1)
+        getCutoffDay(name, sock)
     else:
         print(f"Unknown Message: {msg}")
 
@@ -109,6 +120,7 @@ def checkAttemptsLeft(name, sock):
         sock.sendall(str(data.get("attemptsLeft")).encode('utf-8'))
     else:
         sock.sendall(b"False")
+        print("ERROR: attemptsLeft doesn't exist!!!")
     RetrCommand(name, sock)
 
 
@@ -203,6 +215,70 @@ def initVarsFile(name, sock):
     }
     with open(filename, 'w') as f:
         yaml.dump(data, f, default_flow_style=False)
+    RetrCommand(name, sock)
+
+
+def getPenaltyPerDay(name, sock):
+    """get penalty per day for a module"""
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("penaltyPerDay"):
+        sock.sendall(str(data.get("penaltyPerDay")).encode('utf-8'))
+    else:
+        sock.sendall(b"False")
+        print("ERROR: penaltyPerDay doesn't exist!!!")
+    RetrCommand(name, sock)
+
+
+def getStartDay(name, sock):
+    """get start day for a module"""
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("startDay"):
+        sock.sendall(str(data.get("startDay")).encode('utf-8'))
+    else:
+        sock.sendall(b"False")
+        print("ERROR: startDay doesn't exist!!!")
+    RetrCommand(name, sock)
+
+
+def getEndDay(name, sock):
+    """get end day for a module"""
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("endDay"):
+        sock.sendall(str(data.get("endDay")).encode('utf-8'))
+    else:
+        sock.sendall(b"False")
+        print("ERROR: endDay doesn't exist!!!")
+    RetrCommand(name, sock)
+
+
+def getCutoffDay(name, sock):
+    """get cutoff day for a module"""
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("cutoffDay"):
+        sock.sendall(str(data.get("cutoffDay")).encode('utf-8'))
+    else:
+        sock.sendall(b"False")
+        print("ERROR: cutoffDay doesn't exist!!!")
     RetrCommand(name, sock)
 
 

@@ -2,9 +2,10 @@ import os
 import re
 import sys
 import yaml
+from datetime import datetime
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QDate, QRegExp
+from PyQt5.QtCore import QDate, QRegExp, QDateTime
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox
 
@@ -124,9 +125,12 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
     def __init__(self, parent=None):
         super(CreateWeeklyAssignmentDialog, self).__init__(parent)
         self.setupUi(self)
-        self.dateTimeEdit_startDay.setDate(QDate.currentDate())
-        self.dateTimeEdit_endDay.setDate(QDate.currentDate())
-        self.dateTimeEdit_cutoffDay.setDate(QDate.currentDate())
+        self.dateTimeEdit_startDay.setDisplayFormat("dd/MM/yyyy HH:mm")
+        self.dateTimeEdit_endDay.setDisplayFormat("dd/MM/yyyy HH:mm")
+        self.dateTimeEdit_cutoffDay.setDisplayFormat("dd/MM/yyyy HH:mm")
+        self.dateTimeEdit_startDay.setDateTime(QDateTime.currentDateTime())
+        self.dateTimeEdit_endDay.setDateTime(QDateTime.currentDateTime())
+        self.dateTimeEdit_cutoffDay.setDateTime(QDateTime.currentDateTime())
         self.lineEdit_penaltyPerDay.setPlaceholderText('0')
         # only allow Integers for PenaltyPerDay and totalAttempts
         regex = QRegExp("\\d+")

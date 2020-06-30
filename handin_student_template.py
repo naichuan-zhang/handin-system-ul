@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket
 import sys
+import time
 from datetime import datetime
 
 from PyQt5 import QtCore, QtWidgets
@@ -171,10 +172,10 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                         # create a vars.yaml file to store info of a specific student
                         result = create_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
                         if result == "Success":
-                            print("Vars file has been created!!!")
+                            print("Vars file has been created ...")
                             initVars = True
                         elif result == "Failed":
-                            print("Vars file already exists!!!")
+                            print("Vars file already exists")
                             initVars = False
                         self.run_handin(week_number, s, initVars)
                     else:
@@ -192,6 +193,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             init_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
         # get attempts left
         attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
+        late_penalty: int = check_late_penalty(MODULE_CODE, week_number, s)
         # TODO: Continue .....
         # TODO: when handin success, attemptsLeft - 1 ...
         pass
@@ -277,11 +279,58 @@ def check_attempts_left(module_code, student_id, week_number, s: socket.socket) 
             else:
                 print("you have no attempts left")
                 print(attempts_left)
-                return False
+                return 0
         else:
             print("Error when acquiring attemptsLeft value")
-            return False
-    return 0
+            return -1
+    return -1
+
+
+def check_late_penalty(module_code, week_number, s):
+    s.sendall(b"Get penalty per day")
+    time.sleep(.1)
+    s.sendall(str(module_code).encode())
+    time.sleep(.1)
+    s.sendall(str(week_number).encode())
+    penalty_per_day = s.recv(1024).decode()
+    if penalty_per_day == "False":
+        print("ERROR: penaltyPerDay doesn't exist!!!")
+        return -1
+    s.sendall(b"Get start day")
+    time.sleep(.1)
+    s.sendall(module_code.encode())
+    time.sleep(.1)
+    s.sendall(week_number.encode())
+    start_day = s.recv(1024).decode()
+    if start_day == "False":
+        print("ERROR: startDay doesn't exist!!!")
+        return -1
+    s.sendall(b"Get end day")
+    time.sleep(.1)
+    s.sendall(module_code.encode())
+    time.sleep(.1)
+    s.sendall(week_number.encode())
+    end_day = s.recv(1024).decode()
+    if end_day == "False":
+        print("ERROR: endDay doesn't exist!!!")
+        return -1
+    s.sendall(b"Get cutoff day")
+    time.sleep(.1)
+    s.sendall(module_code.encode())
+    time.sleep(.1)
+    s.sendall(week_number.encode())
+    cutoff_day = s.recv(1024).decode()
+    if cutoff_day == "False":
+        print("ERROR: cutoffDay doesn't exist!!!")
+        return -1
+    dt_format = "%d/%m/%Y %H:%M"
+    start_day: datetime = datetime.strptime(start_day, dt_format)
+    end_day: datetime = datetime.strptime(end_day, dt_format)
+    cutoff_day: datetime = datetime.strptime(cutoff_day, dt_format)
+    now: datetime = datetime.now()
+    print(now - start_day)
+    # TODO: continue ...
+    return -1
 
 
 if __name__ == '__main__':
