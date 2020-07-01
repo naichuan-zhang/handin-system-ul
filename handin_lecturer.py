@@ -6,7 +6,7 @@ import yaml
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDate, QRegExp, QDateTime
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QLineEdit, QGroupBox
 
 from const import DIR_ROOT
 from ui.impl.create_new_module_dialog import Ui_Dialog as Ui_Dialog_Create_New_Module
@@ -144,24 +144,19 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         self.accepted.connect(lambda: self.create_weekly_assignment())
         self.buttonBox.setEnabled(False)
         self.comboBox_moduleCode.editTextChanged.connect(self.disable_buttonbox)
-        self.lineEdit_penaltyPerDay.textChanged.connect(self.disable_buttonbox)
-        self.lineEdit_totalAttempts.textChanged.connect(self.disable_buttonbox)
-        self.lineEdit_collectFilename.textChanged.connect(self.disable_buttonbox)
-        self.lineEdit_test1_tag.textChanged.connect(self.disable_buttonbox)
-        self.lineEdit_test1_marks.textChanged.connect(self.disable_buttonbox)
-        self.lineEdit_test1_command.textChanged.connect(self.disable_buttonbox)
+        # register listeners for all line edits
+        for line_edit in self.findChildren(QLineEdit):
+            line_edit.textChanged.connect(self.disable_buttonbox)
+        # register listeners for all group boxes
+        for group_box in self.findChildren(QGroupBox):
+            group_box.toggled.connect(self.disable_buttonbox)
+            group_box.toggled.connect(self.update_total_marks)
         self.lineEdit_attendance_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_compilation_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test1_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test2_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test3_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test4_marks.textChanged.connect(self.update_total_marks)
-        self.groupBox_attendance.toggled.connect(self.update_total_marks)
-        self.groupBox_compilation.toggled.connect(self.update_total_marks)
-        self.groupBox_customTest1.toggled.connect(self.update_total_marks)
-        self.groupBox_customTest2.toggled.connect(self.update_total_marks)
-        self.groupBox_customTest3.toggled.connect(self.update_total_marks)
-        self.groupBox_customTest4.toggled.connect(self.update_total_marks)
         # set up initial available module codes
         self.comboBox_moduleCode.addItems(self.get_module_codes())
         # set up week numbers
@@ -176,15 +171,17 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         return [name for name in os.listdir(path)]
 
     def disable_buttonbox(self):
-        if len(self.lineEdit_penaltyPerDay.text()) > 0 and len(self.comboBox_moduleCode.currentText()) > 0 \
-                and len(self.lineEdit_totalAttempts.text()) > 0 and len(self.lineEdit_collectFilename.text()) > 0\
-                and len(self.lineEdit_test1_tag.text()) > 0 and len(self.lineEdit_test1_marks.text()) > 0 \
-                and len(self.lineEdit_test1_command.text()) > 0:
-            self.buttonBox.setEnabled(True)
-        else:
-            self.buttonBox.setEnabled(False)
+        """disable button box -- signal"""
+        self.buttonBox.setEnabled(True)
+        line_edits: list = [le for le in self.findChildren(QLineEdit)]
+        for line_edit in line_edits:
+            if line_edit.isEnabled():
+                if not len(line_edit.text()) > 0:
+                    self.buttonBox.setEnabled(False)
+                    return
 
     def update_total_marks(self):
+        """update total marks -- signal"""
         total_marks: int = self.get_total_marks()
         self.label_totalMarks.setText(str(total_marks))
 

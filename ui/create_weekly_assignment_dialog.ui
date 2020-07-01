@@ -28,7 +28,7 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>420</x>
+     <x>410</x>
      <y>940</y>
      <width>341</width>
      <height>32</height>
@@ -220,8 +220,8 @@
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>15</x>
-     <y>210</y>
+     <x>10</x>
+     <y>190</y>
      <width>72</width>
      <height>15</height>
     </rect>
@@ -240,8 +240,8 @@
   <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
-     <x>495</x>
-     <y>210</y>
+     <x>490</x>
+     <y>190</y>
      <width>108</width>
      <height>17</height>
     </rect>
@@ -258,8 +258,8 @@
   <widget class="QLabel" name="label_totalMarks">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>210</y>
+     <x>605</x>
+     <y>190</y>
      <width>121</width>
      <height>17</height>
     </rect>
@@ -279,8 +279,8 @@
   <widget class="QGroupBox" name="groupBox_attendance">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>260</y>
+     <x>30</x>
+     <y>230</y>
      <width>371</width>
      <height>71</height>
     </rect>
@@ -352,10 +352,10 @@
   <widget class="QGroupBox" name="groupBox_compilation">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>360</y>
+     <x>30</x>
+     <y>310</y>
      <width>701</width>
-     <height>80</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="font">
@@ -448,8 +448,8 @@
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>106</x>
-     <y>211</y>
+     <x>101</x>
+     <y>191</y>
      <width>136</width>
      <height>16</height>
     </rect>
@@ -461,8 +461,8 @@
   <widget class="QLineEdit" name="lineEdit_collectFilename">
    <property name="geometry">
     <rect>
-     <x>255</x>
-     <y>210</y>
+     <x>250</x>
+     <y>190</y>
      <width>171</width>
      <height>24</height>
     </rect>
@@ -474,10 +474,10 @@
   <widget class="QGroupBox" name="groupBox_customTest1">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>470</y>
+     <x>30</x>
+     <y>429</y>
      <width>701</width>
-     <height>80</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="font">
@@ -570,10 +570,10 @@
   <widget class="QGroupBox" name="groupBox_customTest2">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>590</y>
+     <x>30</x>
+     <y>560</y>
      <width>701</width>
-     <height>80</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="font">
@@ -666,10 +666,10 @@
   <widget class="QGroupBox" name="groupBox_customTest3">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>710</y>
+     <x>30</x>
+     <y>680</y>
      <width>701</width>
-     <height>80</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="font">
@@ -762,10 +762,10 @@
   <widget class="QGroupBox" name="groupBox_customTest4">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>840</y>
+     <x>30</x>
+     <y>810</y>
      <width>701</width>
-     <height>80</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="font">
@@ -854,6 +854,19 @@
      </rect>
     </property>
    </widget>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_addFilter">
+   <property name="geometry">
+    <rect>
+     <x>490</x>
+     <y>260</y>
+     <width>121</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add Filter</string>
+   </property>
   </widget>
  </widget>
  <resources/>
