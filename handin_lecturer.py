@@ -151,6 +151,7 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         for group_box in self.findChildren(QGroupBox):
             group_box.toggled.connect(self.disable_buttonbox)
             group_box.toggled.connect(self.update_total_marks)
+            group_box.toggled.connect(self.disable_groupbox)
         self.lineEdit_attendance_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_compilation_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test1_marks.textChanged.connect(self.update_total_marks)
@@ -185,6 +186,14 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         total_marks: int = self.get_total_marks()
         self.label_totalMarks.setText(str(total_marks))
 
+    def disable_groupbox(self):
+        """disable group box -- signal,"""
+        if not self.groupBox_customTest2.isChecked():
+            self.groupBox_customTest3.setChecked(False)
+            self.groupBox_customTest4.setChecked(False)
+        if not self.groupBox_customTest3.isChecked():
+            self.groupBox_customTest4.setChecked(False)
+
     def get_total_marks(self) -> int:
         attendance = int(self.lineEdit_attendance_marks.text()) if len(self.lineEdit_attendance_marks.text()) > 0 and self.groupBox_attendance.isChecked() else 0
         compilation = int(self.lineEdit_compilation_marks.text()) if len(self.lineEdit_compilation_marks.text()) > 0 and self.groupBox_compilation.isChecked() else 0
@@ -202,6 +211,36 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         cutoff_day = self.dateTimeEdit_cutoffDay.text().strip()
         penalty_per_day = int(self.lineEdit_penaltyPerDay.text().strip())
         total_attempts = int(self.lineEdit_totalAttempts.text().strip())
+        collection_filename = self.lineEdit_collectFilename.text().strip()
+        tests = {}
+        if self.groupBox_attendance.isChecked():
+            tag = self.lineEdit_attendance_tag.text().strip()
+            marks = int(self.lineEdit_attendance_marks.text().strip())
+            tests["attendance"] = {"tag": tag, "marks": marks}
+        if self.groupBox_compilation.isChecked():
+            tag = self.lineEdit_compilation_tag.text().strip()
+            marks = int(self.lineEdit_compilation_marks.text().strip())
+            command = self.lineEdit_compilation_command.text().strip()
+            tests["compilation"] = {"tag": tag, "marks": marks, "command": command}
+        tag = self.lineEdit_test1_tag.text().strip()
+        marks = int(self.lineEdit_test1_marks.text().strip())
+        command = self.lineEdit_test1_command.text().strip()
+        tests["test1"] = {"tag": tag, "marks": marks, "command": command}
+        if self.groupBox_customTest2.isChecked():
+            tag = self.lineEdit_test2_tag.text().strip()
+            marks = int(self.lineEdit_test2_marks.text().strip())
+            command = self.lineEdit_test2_command.text().strip()
+            tests["test2"] = {"tag": tag, "marks": marks, "command": command}
+        if self.groupBox_customTest3.isChecked():
+            tag = self.lineEdit_test3_tag.text().strip()
+            marks = int(self.lineEdit_test3_marks.text().strip())
+            command = self.lineEdit_test3_command.text().strip()
+            tests["test3"] = {"tag": tag, "marks": marks, "command": command}
+        if self.groupBox_customTest4.isChecked():
+            tag = self.lineEdit_test4_tag.text().strip()
+            marks = int(self.lineEdit_test4_marks.text().strip())
+            command = self.lineEdit_test4_command.text().strip()
+            tests["test4"] = {"tag": tag, "marks": marks, "command": command}
 
         if not check_if_week_exists(module_code=module_code, week_number=week_number):
             path = "/module/" + module_code + "/"
@@ -210,7 +249,7 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             self.update_params_file(
                 moduleCode=module_code, weekNumber=week_number, startDay=start_day,
                 endDay=end_day, cutoffDay=cutoff_day, penaltyPerDay=penalty_per_day,
-                totalAttempts=total_attempts)
+                totalAttempts=total_attempts, collectionFilename=collection_filename, tests=tests)
         else:
             create_message_box(f"{week_number} for module {module_code} already exists!")
 
