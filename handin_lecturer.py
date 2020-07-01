@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import yaml
-from datetime import datetime
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDate, QRegExp, QDateTime
@@ -136,16 +135,40 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         regex = QRegExp("\\d+")
         self.lineEdit_penaltyPerDay.setValidator(QRegExpValidator(regex))
         self.lineEdit_totalAttempts.setValidator(QRegExpValidator(regex))
+        self.lineEdit_attendance_marks.setValidator(QRegExpValidator(regex))
+        self.lineEdit_compilation_marks.setValidator(QRegExpValidator(regex))
+        self.lineEdit_test1_marks.setValidator(QRegExpValidator(regex))
+        self.lineEdit_test2_marks.setValidator(QRegExpValidator(regex))
+        self.lineEdit_test3_marks.setValidator(QRegExpValidator(regex))
+        self.lineEdit_test4_marks.setValidator(QRegExpValidator(regex))
         self.accepted.connect(lambda: self.create_weekly_assignment())
         self.buttonBox.setEnabled(False)
         self.comboBox_moduleCode.editTextChanged.connect(self.disable_buttonbox)
         self.lineEdit_penaltyPerDay.textChanged.connect(self.disable_buttonbox)
         self.lineEdit_totalAttempts.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_collectFilename.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_test1_tag.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_test1_marks.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_test1_command.textChanged.connect(self.disable_buttonbox)
+        self.lineEdit_attendance_marks.textChanged.connect(self.update_total_marks)
+        self.lineEdit_compilation_marks.textChanged.connect(self.update_total_marks)
+        self.lineEdit_test1_marks.textChanged.connect(self.update_total_marks)
+        self.lineEdit_test2_marks.textChanged.connect(self.update_total_marks)
+        self.lineEdit_test3_marks.textChanged.connect(self.update_total_marks)
+        self.lineEdit_test4_marks.textChanged.connect(self.update_total_marks)
+        self.groupBox_attendance.toggled.connect(self.update_total_marks)
+        self.groupBox_compilation.toggled.connect(self.update_total_marks)
+        self.groupBox_customTest1.toggled.connect(self.update_total_marks)
+        self.groupBox_customTest2.toggled.connect(self.update_total_marks)
+        self.groupBox_customTest3.toggled.connect(self.update_total_marks)
+        self.groupBox_customTest4.toggled.connect(self.update_total_marks)
         # set up initial available module codes
         self.comboBox_moduleCode.addItems(self.get_module_codes())
         # set up week numbers
         self.comboBox_weekNumber.addItems(["w01", "w02", "w03", "w04", "w05", "w06",
                                            "w07", "w08", "w09", "w10", "w11", "w12", "w13"])
+        self.groupBox_customTest1.setCheckable(False)
+        self.groupBox_customTest1.setChecked(True)
 
     @staticmethod
     def get_module_codes() -> list:
@@ -153,12 +176,26 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         return [name for name in os.listdir(path)]
 
     def disable_buttonbox(self):
-        if len(self.lineEdit_penaltyPerDay.text()) > 0 \
-                and len(self.comboBox_moduleCode.currentText()) > 0 \
-                and len(self.lineEdit_totalAttempts.text()) > 0:
+        if len(self.lineEdit_penaltyPerDay.text()) > 0 and len(self.comboBox_moduleCode.currentText()) > 0 \
+                and len(self.lineEdit_totalAttempts.text()) > 0 and len(self.lineEdit_collectFilename.text()) > 0\
+                and len(self.lineEdit_test1_tag.text()) > 0 and len(self.lineEdit_test1_marks.text()) > 0 \
+                and len(self.lineEdit_test1_command.text()) > 0:
             self.buttonBox.setEnabled(True)
         else:
             self.buttonBox.setEnabled(False)
+
+    def update_total_marks(self):
+        total_marks: int = self.get_total_marks()
+        self.label_totalMarks.setText(str(total_marks))
+
+    def get_total_marks(self) -> int:
+        attendance = int(self.lineEdit_attendance_marks.text()) if len(self.lineEdit_attendance_marks.text()) > 0 and self.groupBox_attendance.isChecked() else 0
+        compilation = int(self.lineEdit_compilation_marks.text()) if len(self.lineEdit_compilation_marks.text()) > 0 and self.groupBox_compilation.isChecked() else 0
+        test1 = int(self.lineEdit_test1_marks.text()) if len(self.lineEdit_test1_marks.text()) > 0 else 0
+        test2 = int(self.lineEdit_test2_marks.text()) if len(self.lineEdit_test2_marks.text()) > 0 and self.groupBox_customTest2.isChecked() else 0
+        test3 = int(self.lineEdit_test3_marks.text()) if len(self.lineEdit_test3_marks.text()) > 0 and self.groupBox_customTest3.isChecked() else 0
+        test4 = int(self.lineEdit_test4_marks.text()) if len(self.lineEdit_test4_marks.text()) > 0 and self.groupBox_customTest4.isChecked() else 0
+        return attendance + compilation + test1 + test2 + test3 + test4
 
     def create_weekly_assignment(self):
         module_code = self.comboBox_moduleCode.currentText().strip()
