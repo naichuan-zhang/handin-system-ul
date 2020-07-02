@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+import os
 import socket
 import sys
-import time
+import tqdm
 from datetime import datetime
+from subprocess import Popen, PIPE
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QFileInfo
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
@@ -15,8 +18,6 @@ STUDENT_NAME = "Naichuan Zhang"
 STUDENT_ID = "18111521"
 MODULE_CODE = "CS4115"
 MODULE_NAME = "{}"
-
-
 # ****** DYNAMIC CONFIGS ****** #
 
 
@@ -157,6 +158,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             content = ""
             print(e)
         self.textEdit_showFileContent.setText(content)
+        self.submit_filepath = filename
 
     def check_handin(self):
         global initVars
@@ -196,15 +198,23 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             init_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
         # get attempts left
         attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
-        late_penalty = check_late_penalty(MODULE_CODE, week_number, s)
-        if isinstance(late_penalty, str):
-            self.output(late_penalty, flag="ERROR")
-        if isinstance(late_penalty, int):
-            self.output("Penalty applied : " + str(late_penalty))
-            pass
-        # TODO: Continue .....
-        # TODO: when handin success, attemptsLeft - 1 ...
-        pass
+        late_penalty_msg = check_late_penalty(MODULE_CODE, week_number, s)
+        penalty: int = -1
+        if isinstance(late_penalty_msg, str):
+            self.output(late_penalty_msg, flag="ERROR")
+        if isinstance(late_penalty_msg, int):
+            self.output("Penalty applied : " + str(late_penalty_msg))
+            penalty = late_penalty_msg
+        if penalty != -1:
+            # check if the filename matches required filename
+            filename = QFileInfo(self.submit_filepath).fileName()
+            msg = check_collection_filename(filename, MODULE_CODE, week_number, s)
+            if msg == "True":
+                # copy file to server side
+                send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
+                # TODO: when handin success, attemptsLeft - 1 ...
+            else:
+                self.output(msg, "ERROR")
 
     def output(self, text: str, flag: str = "INFO"):
         df = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
@@ -252,6 +262,17 @@ def check_student_authentication(module_code, student_id, s: socket.socket):
         if is_auth == "True":
             return True
     return False
+
+
+def check_collection_filename(filename, module_code, week_number, s: socket.socket):
+    """check if the submitted filename matches required filename"""
+    s.sendall(b"Check collection filename")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(filename.encode())
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        is_collected_filename = s.recv(1024).decode()
+        return is_collected_filename
 
 
 def create_vars_file(module_code, student_id, week_number, s: socket.socket) -> str:
@@ -305,6 +326,21 @@ def check_late_penalty(module_code, week_number, s):
         except:
             late_penalty = str(late_penalty)
         return late_penalty
+
+
+def send_file_to_server(submit_filepath, module_code, week_number, student_id, s: socket.socket):
+    BUFFER_SIZE = 4096
+    SEPARATOR = "<SEPARATOR>"
+    file_size = os.path.getsize(submit_filepath)
+    s.send(str(submit_filepath + SEPARATOR + file_size).encode())
+    progress = tqdm.tqdm(range(file_size), "Sending " + submit_filepath, unit="B", unit_scale=True, unit_divisor=1024)
+    with open(submit_filepath, 'rb') as f:
+        for _ in progress:
+            bytes_read = f.read(BUFFER_SIZE)
+            if not bytes_read:
+                break
+            s.sendall(bytes_read)
+            progress.update(len(bytes_read))
 
 
 if __name__ == '__main__':

@@ -29,36 +29,19 @@ def get_total_attempts(module_code, week_number) -> int:
 def RetrCommand(name, sock: socket.socket):
     msg = sock.recv(1024).decode()
     print("Received command \"%s\"" % msg)
-    if msg == "File Request":
-        time.sleep(.1)
-        RetrFile(name, sock)
-    elif msg == "Authentication":
+
+    if msg == "Authentication":
         time.sleep(.1)
         authentication_of_student(name, sock)
     elif msg == "Check attempts left":
         time.sleep(.1)
         checkAttemptsLeft(name, sock)
-    elif msg == "What code is required":
-        time.sleep(.1)
-        code_requirements(name, sock)
-    elif msg == "Sending a submission report":
-        time.sleep(.1)
-        submission_report(name, sock)
-    elif msg == "Sending a code":
-        time.sleep(.1)
-        recvCode(name, sock)
     elif msg == "Checking Assignment Week":
         time.sleep(.1)
         checkIfAssignmentWeek(name, sock)
     elif msg == "Check module exists":
         time.sleep(.1)
         checkIfModuleExists(name, sock)
-    elif msg == "What is semester start date":
-        time.sleep(.1)
-        getSemStartDate(name, sock)
-    elif msg == "Get most recent attempt":
-        time.sleep(.1)
-        getRecentAttempt(name, sock)
     elif msg == "Create vars file":
         time.sleep(.1)
         createVarsFile(name, sock)
@@ -68,13 +51,11 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Check late penalty":
         time.sleep(.1)
         checkLatePenalty(name, sock)
+    elif msg == "Check collection filename":
+        time.sleep(.1)
+        checkCollectionFilename(name, sock)
     else:
         print(f"Unknown Message: {msg}")
-
-
-def RetrFile(name, sock):
-    pass
-    RetrCommand(name, sock)
 
 
 def authentication_of_student(name, sock):
@@ -117,21 +98,6 @@ def checkAttemptsLeft(name, sock):
     RetrCommand(name, sock)
 
 
-def code_requirements(name, sock):
-    pass
-    RetrCommand(name, sock)
-
-
-def submission_report(name, sock):
-    pass
-    RetrCommand(name, sock)
-
-
-def recvCode(name, sock):
-    pass
-    RetrCommand(name, sock)
-
-
 def checkIfModuleExists(name, sock):
     """check if the moduleCode exists"""
     sock.sendall(b"OK")
@@ -162,16 +128,6 @@ def checkIfAssignmentWeek(name, sock):
             sock.sendall(b"False")
     else:
         sock.sendall(b"False")
-    RetrCommand(name, sock)
-
-
-def getSemStartDate(name, sock):
-    pass
-    RetrCommand(name, sock)
-
-
-def getRecentAttempt(name, sock):
-    pass
     RetrCommand(name, sock)
 
 
@@ -248,6 +204,24 @@ def checkLatePenalty(name, sock):
     elif end_day < now < cutoff_day:
         hours_delta = (now - end_day).seconds // 3600
         sock.sendall(str((hours_delta // 24 + 1) * penalty_per_day).encode('utf-8'))
+    RetrCommand(name, sock)
+
+
+def checkCollectionFilename(name, sock):
+    """check if the submitted filename matches the required filename"""
+    sock.sendall(b"OK")
+    filename = sock.recv(1024).decode()
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    file = path + "params.yaml"
+    with open(file, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("collectionFilename") and str(data.get("collectionFilename")) == filename:
+        sock.sendall(b"True")
+    else:
+        sock.sendall((str(data.get("collectionFilename")) + " is required!").encode('utf-8'))
     RetrCommand(name, sock)
 
 
