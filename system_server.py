@@ -308,6 +308,7 @@ def sendFileToServer(name, sock):
                 f.write(str(content).encode())
                 break
             f.write(data)
+    sock.sendall(b"End sending")
     RetrCommand(name, sock)
 
 

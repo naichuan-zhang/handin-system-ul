@@ -342,6 +342,7 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
         s.sendall(student_id.encode())
         s.sendall(str(submit_filepath).encode())
         msg = s.recv(1024).decode()
+        print(msg)
         with open(submit_filepath, 'rb') as f:
             while True:
                 data = f.read(1024)
@@ -349,7 +350,8 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
                     s.sendall(b"DONE__")
                     break
                 s.sendall(data)
-        print("Done sending")
+        msg = s.recv(1024).decode()
+        print(msg)
 
 
 def get_exec_result(module_code, week_number, student_id, s: socket.socket) -> str:
