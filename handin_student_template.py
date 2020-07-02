@@ -2,6 +2,8 @@
 import os
 import socket
 import sys
+import time
+
 import tqdm
 from datetime import datetime
 from subprocess import Popen, PIPE
@@ -212,6 +214,10 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             if msg == "True":
                 # copy file to server side
                 send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
+                # get exec result output
+                print('send file to server finished ...')
+                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s)
+                self.output(result)
                 # TODO: when handin success, attemptsLeft - 1 ...
             else:
                 self.output(msg, "ERROR")
@@ -334,18 +340,26 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
         s.sendall(module_code.encode())
         s.sendall(week_number.encode())
         s.sendall(student_id.encode())
-        BUFFER_SIZE = 4096
-        SEPARATOR = "<SEPARATOR>"
-        file_size = os.path.getsize(submit_filepath)
-        s.send(str(submit_filepath + SEPARATOR + str(file_size)).encode())
-        progress = tqdm.tqdm(range(file_size), "Sending " + submit_filepath, unit="B", unit_scale=True, unit_divisor=1024)
+        s.sendall(str(submit_filepath).encode())
+        msg = s.recv(1024).decode()
         with open(submit_filepath, 'rb') as f:
-            for _ in progress:
-                bytes_read = f.read(BUFFER_SIZE)
-                if not bytes_read:
+            while True:
+                data = f.read(1024)
+                if not data:
+                    s.sendall(b"DONE__")
                     break
-                s.sendall(bytes_read)
-                progress.update(len(bytes_read))
+                s.sendall(data)
+        print("Done sending")
+
+
+def get_exec_result(module_code, week_number, student_id, s: socket.socket) -> str:
+    s.sendall(b"Get exec result")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        s.sendall(student_id.encode())
+        result = s.recv(1024).decode()
+        return result
 
 
 if __name__ == '__main__':

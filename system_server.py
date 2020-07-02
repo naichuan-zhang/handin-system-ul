@@ -4,7 +4,6 @@ import threading
 import time
 from datetime import datetime
 
-import tqdm
 import yaml
 
 import const
@@ -20,11 +19,70 @@ def get_file_content(path, mode='r'):
 
 
 def get_total_attempts(module_code, week_number) -> int:
-    # read /**weekNum**/params.yaml file to get totalAttempts value
+    """read /**weekNum**/params.yaml file to get totalAttempts value"""
     path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/params.yaml"
     with open(path, 'r') as stream:
         data: dict = yaml.safe_load(stream)
     return data.get("totalAttempts")
+
+
+def getPenaltyPerDay(module_code, week_number):
+    """get penalty per day for a module"""
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("penaltyPerDay"):
+        return str(data.get("penaltyPerDay"))
+    else:
+        print("ERROR: penaltyPerDay doesn't exist!!!")
+        return "False"
+
+
+def getStartDay(module_code, week_number):
+    """get start day for a module"""
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("startDay"):
+        return str(data.get("startDay"))
+    else:
+        print("ERROR: startDay doesn't exist!!!")
+        return "False"
+
+
+def getEndDay(module_code, week_number):
+    """get end day for a module"""
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("endDay"):
+        return str(data.get("endDay"))
+    else:
+        print("ERROR: endDay doesn't exist!!!")
+        return "False"
+
+
+def getCutoffDay(module_code, week_number):
+    """get cutoff day for a module"""
+    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
+    filename = path + "params.yaml"
+    with open(filename, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data.get("cutoffDay"):
+        return str(data.get("cutoffDay"))
+    else:
+        print("ERROR: cutoffDay doesn't exist!!!")
+        return "False"
+
+
+def get_required_code_filename(module_code, week_number) -> str:
+    params_path = const.get_params_file_path(module_code, week_number)
+    with open(params_path, 'r') as stream:
+        data = yaml.safe_load(stream)
+    return data.get("collectionFilename") if data.get("collectionFilename") else ""
 
 
 def RetrCommand(name, sock: socket.socket):
@@ -58,6 +116,9 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Send file to server":
         time.sleep(.1)
         sendFileToServer(name, sock)
+    elif msg == "Get exec result":
+        time.sleep(.1)
+        getExecResult(name, sock)
     else:
         print(f"Unknown Message: {msg}")
 
@@ -235,73 +296,34 @@ def sendFileToServer(name, sock):
     module_code = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
     student_id = sock.recv(1024).decode()
-    path = const.DIR_ROOT + "/module/" + module_code + "/data/" + student_id + "/" + week_number + "/"
-    BUFFER_SIZE = 4096
-    SEPARATOR = "<SEPARATOR>"
-    filename, file_size = sock.recv(BUFFER_SIZE).decode().split(SEPARATOR)
-    file_size = int(file_size)
-    filename = os.path.basename(filename)
-    progress = tqdm.tqdm(range(file_size), "Receiving " + filename, unit="B", unit_scale=True, unit_divisor=1024)
-    with open(path + filename, 'wb') as f:
-        for _ in progress:
-            bytes_read = sock.recv(BUFFER_SIZE)
-            if not bytes_read:
+    filepath = sock.recv(1024).decode()
+    filename = os.path.basename(filepath)
+    path = const.get_program_file_path(module_code, week_number, student_id, filename)
+    sock.sendall(b"Start sending")
+    with open(path, 'wb') as f:
+        while True:
+            data = sock.recv(1024)
+            if data.decode().endswith("DONE__"):
+                content, done_str = data.decode().split("DONE__")
+                f.write(str(content).encode())
                 break
-            f.write(bytes_read)
-            progress.update(len(bytes_read))
+            f.write(data)
     RetrCommand(name, sock)
 
 
-def getPenaltyPerDay(module_code, week_number):
-    """get penalty per day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
-        data = yaml.safe_load(stream)
-    if data.get("penaltyPerDay"):
-        return str(data.get("penaltyPerDay"))
-    else:
-        print("ERROR: penaltyPerDay doesn't exist!!!")
-        return "False"
+def getExecResult(name, sock):
+    """Exec the program and get exec result"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    student_id = sock.recv(1024).decode()
 
-
-def getStartDay(module_code, week_number):
-    """get start day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
-        data = yaml.safe_load(stream)
-    if data.get("startDay"):
-        return str(data.get("startDay"))
-    else:
-        print("ERROR: startDay doesn't exist!!!")
-        return "False"
-
-
-def getEndDay(module_code, week_number):
-    """get end day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
-        data = yaml.safe_load(stream)
-    if data.get("endDay"):
-        return str(data.get("endDay"))
-    else:
-        print("ERROR: endDay doesn't exist!!!")
-        return "False"
-
-
-def getCutoffDay(module_code, week_number):
-    """get cutoff day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
-        data = yaml.safe_load(stream)
-    if data.get("cutoffDay"):
-        return str(data.get("cutoffDay"))
-    else:
-        print("ERROR: cutoffDay doesn't exist!!!")
-        return "False"
+    # if attendance exists, check attendance, assign marks
+    required_code_filename = get_required_code_filename(module_code, week_number)
+    code_filepath = const.get_program_file_path(module_code, week_number, student_id, required_code_filename)
+    print(code_filepath)
+    sock.sendall(b"haha just test")
+    RetrCommand(name, sock)
 
 
 if __name__ == '__main__':

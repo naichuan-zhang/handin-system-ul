@@ -9,7 +9,7 @@ tests:
     marks: 1
     tag: attendance
   compilation:
-    command: xxx
+    command: g++ -std=c++0x -o mtrans mtrans.cc
     marks: 2
     tag: compilation
   test1:
