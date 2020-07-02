@@ -4,6 +4,7 @@ import threading
 import time
 from datetime import datetime
 
+import tqdm
 import yaml
 
 import const
@@ -54,6 +55,9 @@ def RetrCommand(name, sock: socket.socket):
     elif msg == "Check collection filename":
         time.sleep(.1)
         checkCollectionFilename(name, sock)
+    elif msg == "Send file to server":
+        time.sleep(.1)
+        sendFileToServer(name, sock)
     else:
         print(f"Unknown Message: {msg}")
 
@@ -222,6 +226,29 @@ def checkCollectionFilename(name, sock):
         sock.sendall(b"True")
     else:
         sock.sendall((str(data.get("collectionFilename")) + " is required!").encode('utf-8'))
+    RetrCommand(name, sock)
+
+
+def sendFileToServer(name, sock):
+    """Copy code file to server side"""
+    sock.sendall(b"OK")
+    module_code = sock.recv(1024).decode()
+    week_number = sock.recv(1024).decode()
+    student_id = sock.recv(1024).decode()
+    path = const.DIR_ROOT + "/module/" + module_code + "/data/" + student_id + "/" + week_number + "/"
+    BUFFER_SIZE = 4096
+    SEPARATOR = "<SEPARATOR>"
+    filename, file_size = sock.recv(BUFFER_SIZE).decode().split(SEPARATOR)
+    file_size = int(file_size)
+    filename = os.path.basename(filename)
+    progress = tqdm.tqdm(range(file_size), "Receiving " + filename, unit="B", unit_scale=True, unit_divisor=1024)
+    with open(path + filename, 'wb') as f:
+        for _ in progress:
+            bytes_read = sock.recv(BUFFER_SIZE)
+            if not bytes_read:
+                break
+            f.write(bytes_read)
+            progress.update(len(bytes_read))
     RetrCommand(name, sock)
 
 

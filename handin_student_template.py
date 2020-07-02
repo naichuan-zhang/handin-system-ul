@@ -329,18 +329,23 @@ def check_late_penalty(module_code, week_number, s):
 
 
 def send_file_to_server(submit_filepath, module_code, week_number, student_id, s: socket.socket):
-    BUFFER_SIZE = 4096
-    SEPARATOR = "<SEPARATOR>"
-    file_size = os.path.getsize(submit_filepath)
-    s.send(str(submit_filepath + SEPARATOR + file_size).encode())
-    progress = tqdm.tqdm(range(file_size), "Sending " + submit_filepath, unit="B", unit_scale=True, unit_divisor=1024)
-    with open(submit_filepath, 'rb') as f:
-        for _ in progress:
-            bytes_read = f.read(BUFFER_SIZE)
-            if not bytes_read:
-                break
-            s.sendall(bytes_read)
-            progress.update(len(bytes_read))
+    s.sendall(b"Send file to server")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        s.sendall(student_id.encode())
+        BUFFER_SIZE = 4096
+        SEPARATOR = "<SEPARATOR>"
+        file_size = os.path.getsize(submit_filepath)
+        s.send(str(submit_filepath + SEPARATOR + str(file_size)).encode())
+        progress = tqdm.tqdm(range(file_size), "Sending " + submit_filepath, unit="B", unit_scale=True, unit_divisor=1024)
+        with open(submit_filepath, 'rb') as f:
+            for _ in progress:
+                bytes_read = f.read(BUFFER_SIZE)
+                if not bytes_read:
+                    break
+                s.sendall(bytes_read)
+                progress.update(len(bytes_read))
 
 
 if __name__ == '__main__':
