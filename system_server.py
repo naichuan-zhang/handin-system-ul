@@ -227,6 +227,7 @@ def initVarsFile(name, sock):
     filename = path + "vars.yaml"
     data = {
         "attemptsLeft": get_total_attempts(module_code, week_number),
+        "marks": 0,
     }
     with open(filename, 'w') as f:
         yaml.dump(data, f, default_flow_style=False)
@@ -332,13 +333,13 @@ def getExecResult(name, sock):
     code_filepath = const.get_program_file_path(module_code, week_number, student_id, required_code_filename)
     params_filepath = const.get_params_file_path(module_code, week_number)
     with open(params_filepath, 'r') as stream:
-        data = yaml.safe_load(stream)
+        data: dict = yaml.safe_load(stream)
     if data["tests"]:
         # if attendance exists, check attendance, assign marks
         if data["tests"]["attendance"]:
             attendance_marks = int(data["tests"]["attendance"]["marks"])
             attendance_tag = data["tests"]["attendance"]["tag"]
-            curr_marks += attendance_marks
+            curr_marks = curr_marks + attendance_marks
             result_msg += "%s: %d/%d\n" % (attendance_tag, attendance_marks, attendance_marks)
         # if compilation exists, check compilation, assign marks
         if data["tests"]["compilation"]:
@@ -353,8 +354,20 @@ def getExecResult(name, sock):
             return_code = p.wait()
             if return_code == 0:
                 # compilation successful
-                curr_marks += compilation_marks
+                curr_marks = curr_marks + compilation_marks
                 result_msg += "%s: %d/%d\n" % (compilation_tag, compilation_marks, compilation_marks)
+
+                # execute the rest of custom tests when compilation success
+                for key in data["tests"].keys():
+                    if key.startswith("test"):
+                        test_marks = int(data["tests"][key]["marks"])
+                        test_tag = data["tests"][key]["tag"]
+                        test_command = data["tests"][key]["command"]
+
+                        # change working directory
+                        os.chdir(os.path.dirname(code_filepath))
+
+                        # TODO: execute custom tests here ....
             else:
                 # compilation failed
                 result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)
@@ -362,7 +375,27 @@ def getExecResult(name, sock):
             # change working directory back
             # os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    print(result_msg)
+        # check assignment attempts left and update attempts left
+        vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
+        with open(vars_filepath, 'r') as stream:
+            vars_data: dict = yaml.safe_load(stream)
+        if vars_data["attemptsLeft"]:
+            vars_data["attemptsLeft"] = vars_data["attemptsLeft"] - 1
+            if vars_data["attemptsLeft"] <= 0:
+                vars_data["attemptsLeft"] = 0
+        with open(vars_filepath, 'w') as f:
+            yaml.dump(vars_data, f)
+        result_msg += "\n\nYou have %s attempts left\n\n" % str(vars_data["attemptsLeft"])
+
+        # update student marks
+        with open(vars_filepath, 'r') as stream:
+            vars_data2: dict = yaml.safe_load(stream)
+        if "marks" in vars_data2.keys():
+            vars_data2["marks"] = curr_marks
+        with open(vars_filepath, 'w') as f:
+            yaml.dump(vars_data2, f)
+        result_msg += "\n\nTotal marks: %s\n\n" % str(vars_data2["marks"])
+
     sock.sendall(result_msg.encode())
     RetrCommand(name, sock)
 

@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+import os
 import socket
 import sys
+import time
+
+import tqdm
 from datetime import datetime
+from subprocess import Popen, PIPE
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QFileInfo
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
@@ -107,10 +113,11 @@ class Ui_MainWindow(object):
         self.pushButton_handin.setText(_translate("MainWindow", "Handin"))
         self.label_6.setText(_translate("MainWindow", "Output"))
         self.label_7.setText(_translate("MainWindow", "Week Number:"))
-        self.textEdit_Output.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" />"
-"</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.textEdit_Output.setHtml(_translate("MainWindow",
+                                                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+                                                "</style></head><body style=\" font-family:\'SimSun\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
 
 
 class HandinMainWindow(QMainWindow, Ui_MainWindow):
@@ -153,6 +160,7 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
             content = ""
             print(e)
         self.textEdit_showFileContent.setText(content)
+        self.submit_filepath = filename
 
     def check_handin(self):
         global initVars
@@ -171,10 +179,10 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                         # create a vars.yaml file to store info of a specific student
                         result = create_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
                         if result == "Success":
-                            print("Vars file has been created!!!")
+                            print("Vars file has been created ...")
                             initVars = True
                         elif result == "Failed":
-                            print("Vars file already exists!!!")
+                            print("Vars file already exists")
                             initVars = False
                         self.run_handin(week_number, s, initVars)
                     else:
@@ -190,8 +198,30 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         # initialize vars.yaml file
         if init_vars:
             init_vars_file(MODULE_CODE, STUDENT_ID, week_number, s)
-        # get total attempts number
-        pass
+        # get attempts left
+        attempts_left: int = check_attempts_left(MODULE_CODE, STUDENT_ID, week_number, s)
+        late_penalty_msg = check_late_penalty(MODULE_CODE, week_number, s)
+        penalty: int = -1
+        if isinstance(late_penalty_msg, str):
+            self.output(late_penalty_msg, flag="ERROR")
+        if isinstance(late_penalty_msg, int):
+            self.output("Penalty applied : " + str(late_penalty_msg))
+            penalty = late_penalty_msg
+        if penalty != -1:
+            # check if the filename matches required filename
+            filename = QFileInfo(self.submit_filepath).fileName()
+            file_suffix = QFileInfo(self.submit_filepath).suffix()
+            msg = check_collection_filename(filename, MODULE_CODE, week_number, s)
+            if msg == "True":
+                # copy file to server side
+                send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
+                # get exec result output
+                print('send file to server finished ...')
+                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix)
+                self.output(result)
+                # TODO: when handin success, attemptsLeft - 1 ...
+            else:
+                self.output(msg, "ERROR")
 
     def output(self, text: str, flag: str = "INFO"):
         df = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
@@ -241,6 +271,17 @@ def check_student_authentication(module_code, student_id, s: socket.socket):
     return False
 
 
+def check_collection_filename(filename, module_code, week_number, s: socket.socket):
+    """check if the submitted filename matches required filename"""
+    s.sendall(b"Check collection filename")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(filename.encode())
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        is_collected_filename = s.recv(1024).decode()
+        return is_collected_filename
+
+
 def create_vars_file(module_code, student_id, week_number, s: socket.socket) -> str:
     """create a vars.yaml file to store info of a specific student"""
     s.sendall(b"Create vars file")
@@ -261,11 +302,70 @@ def init_vars_file(module_code, student_id, week_number, s: socket.socket):
         s.sendall(week_number.encode())
 
 
-def check_number_of_attempts(module_code, week_number, s: socket.socket):
-    s.sendall(b"Get total attempts")
+def check_attempts_left(module_code, student_id, week_number, s: socket.socket) -> int:
+    s.sendall(b"Check attempts left")
     if s.recv(1024).decode() == "OK":
-        # TODO: Finish this
-        pass
+        s.sendall(module_code.encode())
+        s.sendall(student_id.encode())
+        s.sendall(week_number.encode())
+        attempts_left = s.recv(1024).decode()
+        if attempts_left != "False":
+            if 1 <= int(attempts_left) <= 10:
+                return int(attempts_left)
+            else:
+                print("you have no attempts left")
+                print(attempts_left)
+                return 0
+        else:
+            print("Error when acquiring attemptsLeft value")
+            return -1
+    return -1
+
+
+def check_late_penalty(module_code, week_number, s):
+    s.sendall(b"Check late penalty")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        late_penalty = s.recv(1024).decode()
+        try:
+            late_penalty = int(late_penalty)
+        except:
+            late_penalty = str(late_penalty)
+        return late_penalty
+
+
+def send_file_to_server(submit_filepath, module_code, week_number, student_id, s: socket.socket):
+    s.sendall(b"Send file to server")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        s.sendall(student_id.encode())
+        s.sendall(str(submit_filepath).encode())
+        msg = s.recv(1024).decode()
+        print(msg)
+        with open(submit_filepath, 'rb') as f:
+            while True:
+                data = f.read(1024)
+                if not data:
+                    s.sendall(b"DONE")
+                    break
+                s.sendall(data)
+        msg = s.recv(1024).decode()
+        print(msg)
+
+
+def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix) -> str:
+    s.sendall(b"Get exec result")
+    if s.recv(1024).decode() == "OK":
+        s.sendall(module_code.encode())
+        s.sendall(week_number.encode())
+        s.sendall(student_id.encode())
+        s.sendall(file_suffix.encode())
+
+        # TODO: Continue here ...
+        result = s.recv(1024).decode()
+        return result
 
 
 if __name__ == '__main__':

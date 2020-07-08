@@ -1,9 +1,9 @@
 collectionFilename: mtrans.cc
-cutoffDay: 15/07/2020 16:21
-endDay: 08/07/2020 16:21
+cutoffDay: 15/07/2020 14:50
+endDay: 08/07/2020 14:50
 moduleCode: cs4115
-penaltyPerDay: 2
-startDay: 01/07/2020 16:21
+penaltyPerDay: 1
+startDay: 08/07/2020 14:50
 tests:
   attendance:
     marks: 1
@@ -13,12 +13,12 @@ tests:
     marks: 2
     tag: compilation
   test1:
-    command: xxx===
+    command: ---
     marks: 3
-    tag: test 1
+    tag: test 1 ...
   test2:
-    command: xxx-------
+    command: xxxx
     marks: 3
-    tag: test 2
+    tag: test 2 ...
 totalAttempts: 10
 weekNumber: w01
