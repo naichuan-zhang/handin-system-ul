@@ -210,13 +210,14 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
         if penalty != -1:
             # check if the filename matches required filename
             filename = QFileInfo(self.submit_filepath).fileName()
+            file_suffix = QFileInfo(self.submit_filepath).suffix()
             msg = check_collection_filename(filename, MODULE_CODE, week_number, s)
             if msg == "True":
                 # copy file to server side
                 send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
                 # get exec result output
                 print('send file to server finished ...')
-                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s)
+                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix)
                 self.output(result)
                 # TODO: when handin success, attemptsLeft - 1 ...
             else:
@@ -347,19 +348,22 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
             while True:
                 data = f.read(1024)
                 if not data:
-                    s.sendall(b"DONE__")
+                    s.sendall(b"DONE")
                     break
                 s.sendall(data)
         msg = s.recv(1024).decode()
         print(msg)
 
 
-def get_exec_result(module_code, week_number, student_id, s: socket.socket) -> str:
+def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix) -> str:
     s.sendall(b"Get exec result")
     if s.recv(1024).decode() == "OK":
         s.sendall(module_code.encode())
         s.sendall(week_number.encode())
         s.sendall(student_id.encode())
+        s.sendall(file_suffix.encode())
+
+        # TODO: Continue here ...
         result = s.recv(1024).decode()
         return result
 

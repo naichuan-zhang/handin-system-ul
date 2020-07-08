@@ -3,6 +3,7 @@ import socket
 import threading
 import time
 from datetime import datetime
+from subprocess import Popen, PIPE, call
 
 import yaml
 
@@ -303,8 +304,8 @@ def sendFileToServer(name, sock):
     with open(path, 'wb') as f:
         while True:
             data = sock.recv(1024)
-            if data.decode().endswith("DONE__"):
-                content, done_str = data.decode().split("DONE__")
+            if data.decode().endswith("DONE"):
+                content, done_str = data.decode().split("DONE")
                 f.write(str(content).encode())
                 break
             f.write(data)
@@ -318,12 +319,51 @@ def getExecResult(name, sock):
     module_code = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
     student_id = sock.recv(1024).decode()
+    file_suffix = sock.recv(1024).decode()
 
-    # if attendance exists, check attendance, assign marks
+    if file_suffix == "cc" or file_suffix == "cpp":
+        lang = "c++"
+    elif file_suffix == "java":
+        lang = "java"
+
+    curr_marks: int = 0
+    result_msg: str = ""
     required_code_filename = get_required_code_filename(module_code, week_number)
     code_filepath = const.get_program_file_path(module_code, week_number, student_id, required_code_filename)
-    print(code_filepath)
-    sock.sendall(b"haha just test")
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
+        data = yaml.safe_load(stream)
+    if data["tests"]:
+        # if attendance exists, check attendance, assign marks
+        if data["tests"]["attendance"]:
+            attendance_marks = int(data["tests"]["attendance"]["marks"])
+            attendance_tag = data["tests"]["attendance"]["tag"]
+            curr_marks += attendance_marks
+            result_msg += "%s: %d/%d\n" % (attendance_tag, attendance_marks, attendance_marks)
+        # if compilation exists, check compilation, assign marks
+        if data["tests"]["compilation"]:
+            compilation_marks = int(data["tests"]["compilation"]["marks"])
+            compilation_tag = data["tests"]["compilation"]["tag"]
+            compilation_command = data["tests"]["compilation"]["command"]
+
+            # change working directory
+            os.chdir(os.path.dirname(code_filepath))
+
+            p = Popen(compilation_command, stdout=PIPE, shell=True)
+            return_code = p.wait()
+            if return_code == 0:
+                # compilation successful
+                curr_marks += compilation_marks
+                result_msg += "%s: %d/%d\n" % (compilation_tag, compilation_marks, compilation_marks)
+            else:
+                # compilation failed
+                result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)
+
+            # change working directory back
+            # os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    print(result_msg)
+    sock.sendall(result_msg.encode())
     RetrCommand(name, sock)
 
 
