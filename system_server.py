@@ -363,11 +363,16 @@ def getExecResult(name, sock):
                         test_marks = int(data["tests"][key]["marks"])
                         test_tag = data["tests"][key]["tag"]
                         test_command = data["tests"][key]["command"]
+                        input_data_file_path = data["tests"][key]["inputDataFile"]
+                        input_data_file = open(input_data_file_path, 'r')
 
                         # change working directory
                         os.chdir(os.path.dirname(code_filepath))
+                        proc = Popen(test_command, stdin=input_data_file, stdout=PIPE, stderr=PIPE, shell=False)
+                        stdout, stderr = proc.communicate()
 
-                        # TODO: execute custom tests here ....
+                        # TODO: continue to check if output is correct???
+                        # TODO: show result_msg
             else:
                 # compilation failed
                 result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)

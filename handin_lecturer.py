@@ -165,11 +165,53 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
                                            "w07", "w08", "w09", "w10", "w11", "w12", "w13"])
         self.groupBox_customTest1.setCheckable(False)
         self.groupBox_customTest1.setChecked(True)
+        self.checkBox_test1_inputDataFile.stateChanged.connect(self.add_input_data_file)
+        self.checkBox_test2_inputDataFile.stateChanged.connect(self.add_input_data_file)
+        self.checkBox_test3_inputDataFile.stateChanged.connect(self.add_input_data_file)
+        self.checkBox_test4_inputDataFile.stateChanged.connect(self.add_input_data_file)
 
     @staticmethod
     def get_module_codes() -> list:
         path = DIR_ROOT + "/module/"
         return [name for name in os.listdir(path)]
+
+    def add_input_data_file(self):
+        """add input data file -- signal"""
+        if self.checkBox_test1_inputDataFile.isChecked():
+            dialog = QtWidgets.QFileDialog()
+            dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+            filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Choose file", "./", "All Files (*)")
+            self.label_test1_inputDataFile.setText(filename)
+        else:
+            self.label_test1_inputDataFile.setText("")
+
+        if self.checkBox_test2_inputDataFile.isChecked():
+            dialog = QtWidgets.QFileDialog()
+            dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+            filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Choose file", "./", "All Files (*)")
+            self.label_test2_inputDataFile.setText(filename)
+        else:
+            self.label_test2_inputDataFile.setText("")
+
+        if self.checkBox_test3_inputDataFile.isChecked():
+            dialog = QtWidgets.QFileDialog()
+            dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+            filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Choose file", "./", "All Files (*)")
+            self.label_test3_inputDataFile.setText(filename)
+        else:
+            self.label_test3_inputDataFile.setText("")
+
+        if self.checkBox_test4_inputDataFile.isChecked():
+            dialog = QtWidgets.QFileDialog()
+            dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+            filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Choose file", "./", "All Files (*)")
+            self.label_test4_inputDataFile.setText(filename)
+        else:
+            self.label_test4_inputDataFile.setText("")
 
     def disable_buttonbox(self):
         """disable button box -- signal"""
@@ -225,22 +267,26 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         tag = self.lineEdit_test1_tag.text().strip()
         marks = int(self.lineEdit_test1_marks.text().strip())
         command = self.lineEdit_test1_command.text().strip()
-        tests["test1"] = {"tag": tag, "marks": marks, "command": command}
+        inputDataFile = self.label_test1_inputDataFile.text().strip()
+        tests["test1"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile}
         if self.groupBox_customTest2.isChecked():
             tag = self.lineEdit_test2_tag.text().strip()
             marks = int(self.lineEdit_test2_marks.text().strip())
             command = self.lineEdit_test2_command.text().strip()
-            tests["test2"] = {"tag": tag, "marks": marks, "command": command}
+            inputDataFile = self.label_test2_inputDataFile.text().strip()
+            tests["test2"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile}
         if self.groupBox_customTest3.isChecked():
             tag = self.lineEdit_test3_tag.text().strip()
             marks = int(self.lineEdit_test3_marks.text().strip())
             command = self.lineEdit_test3_command.text().strip()
-            tests["test3"] = {"tag": tag, "marks": marks, "command": command}
+            inputDataFile = self.label_test3_inputDataFile.text().strip()
+            tests["test3"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile}
         if self.groupBox_customTest4.isChecked():
             tag = self.lineEdit_test4_tag.text().strip()
             marks = int(self.lineEdit_test4_marks.text().strip())
             command = self.lineEdit_test4_command.text().strip()
-            tests["test4"] = {"tag": tag, "marks": marks, "command": command}
+            inputDataFile = self.label_test4_inputDataFile.text().strip()
+            tests["test4"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile}
 
         if not check_if_week_exists(module_code=module_code, week_number=week_number):
             path = "/module/" + module_code + "/"

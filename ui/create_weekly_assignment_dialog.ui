@@ -566,6 +566,32 @@
      </rect>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBox_test1_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>161</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Input Data File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test1_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>80</y>
+      <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_customTest2">
    <property name="geometry">
@@ -660,6 +686,32 @@
       <width>211</width>
       <height>21</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test2_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>151</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Input Data File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test2_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>80</y>
+      <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
@@ -758,6 +810,32 @@
      </rect>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBox_test3_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>151</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Input Data File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test3_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>80</y>
+      <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_customTest4">
    <property name="geometry">
@@ -852,6 +930,32 @@
       <width>211</width>
       <height>21</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test4_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>151</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Input Data File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test4_inputDataFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>80</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
