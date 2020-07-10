@@ -1,17 +1,19 @@
 import os
 import re
 import sys
-import yaml
 
-from PyQt5 import QtWidgets
+import yaml
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QDate, QRegExp, QDateTime
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QLineEdit, QGroupBox
+from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QLineEdit, QGroupBox, QTableWidgetItem
 
+import const
 from const import DIR_ROOT
 from ui.impl.create_new_module_dialog import Ui_Dialog as Ui_Dialog_Create_New_Module
 from ui.impl.create_weekly_assignment_dialog import Ui_Dialog as Ui_Dialog_Create_Weekly_Assignment
 from ui.impl.handin_lecturer_main_window import Ui_MainWindow as Ui_MainWindow
+from ui.impl.manage_student_marks_dialog import Ui_Dialog as Ui_Dialog_Manage_Student_Marks
 
 
 def check_if_module_exists(module_code: str) -> bool:
@@ -41,6 +43,30 @@ def create_message_box(text):
     msgBox.exec()
 
 
+def isMatchRegex(regex: str, text: str) -> bool:
+    return bool(re.match(regex, text))
+
+
+def get_module_codes() -> list:
+    path = DIR_ROOT + "/module/"
+    return [name for name in os.listdir(path)]
+
+
+def get_all_test_items(module_code, week_number) -> list:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
+        data: dict = yaml.safe_load(stream)
+    return [item for item in data["tests"].keys()]
+
+
+def get_all_student_ids(module_code) -> list:
+    class_list_filepath = const.get_class_list_file_path(module_code)
+    with open(class_list_filepath, 'r') as f:
+        content = f.readlines()
+    content = [x.strip() for x in content]
+    return content
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -54,16 +80,83 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.show()
 
     def manage_student_marks(self):
-        # TODO: manage student marks
-        pass
+        dialog = ManageStudentMarksDialog(self)
+        dialog.show()
 
     def create_weekly_assignment(self):
         dialog = CreateWeeklyAssignmentDialog(self)
         dialog.show()
 
 
-def isMatchRegex(regex: str, text: str) -> bool:
-    return bool(re.match(regex, text))
+class ManageStudentMarksDialog(QDialog, Ui_Dialog_Manage_Student_Marks):
+    def __init__(self, parent=None):
+        super(ManageStudentMarksDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.comboBox_moduleCode.addItems(get_module_codes())
+        self.comboBox_week.addItems(["w01", "w02", "w03", "w04", "w05", "w06", "w07",
+                                    "w08", "w09", "w10", "w11", "w12", "w13"])
+        self.comboBox_week.currentTextChanged.connect(self.update_table)
+        self.comboBox_moduleCode.currentTextChanged.connect(self.update_table)
+        self.tableWidget.setEnabled(False)
+        self.update_table()
+
+    def columnFromLabel(self, label) -> int:
+        model = self.tableWidget.horizontalHeader().model()
+        for column in range(model.columnCount()):
+            if model.headerData(column, QtCore.Qt.Horizontal) == label:
+                return column
+        return -1
+
+    def update_table(self):
+        """update table widget - signal"""
+        try:
+            horizontal_header_labels = ["Student ID"]
+            horizontal_header_labels += get_all_test_items(self.comboBox_moduleCode.currentText(),
+                                                           self.comboBox_week.currentText())
+            horizontal_header_labels += ["Attempts Left", "Total Marks"]
+            self.tableWidget.setColumnCount(len(horizontal_header_labels))
+            student_ids = get_all_student_ids(self.comboBox_moduleCode.currentText())
+            self.tableWidget.setRowCount(len(student_ids))
+            self.tableWidget.setHorizontalHeaderLabels(horizontal_header_labels)
+
+            # write student ids
+            col = 0
+            for _id in student_ids:
+                self.tableWidget.setItem(col, 0, QTableWidgetItem(_id))
+                col += 1
+            # write attendance, compilation, test1, test2 ....
+            try:
+                for row in range(self.tableWidget.rowCount()):
+                    student_id = self.tableWidget.item(row, 0).text().strip()
+                    vars_filepath = const.get_vars_file_path(self.comboBox_moduleCode.currentText(),
+                                                             self.comboBox_week.currentText(), student_id)
+                    with open(vars_filepath, 'r') as stream:
+                        data: dict = yaml.safe_load(stream)
+                    for label in horizontal_header_labels[1:-2]:
+                        if label in data.keys():
+                            self.tableWidget.setItem(row, self.columnFromLabel(label),
+                                                     QTableWidgetItem(str(data[label])))
+            except Exception as e:
+                print(e)
+            # write attempts left and total marks
+            try:
+                for row in range(self.tableWidget.rowCount()):
+                    student_id = self.tableWidget.item(row, 0).text().strip()
+                    vars_filepath = const.get_vars_file_path(self.comboBox_moduleCode.currentText(),
+                                                             self.comboBox_week.currentText(), student_id)
+                    with open(vars_filepath, 'r') as stream:
+                        data: dict = yaml.safe_load(stream)
+                    if "attemptsLeft" in data.keys():
+                        self.tableWidget.setItem(row, self.columnFromLabel("Attempts Left"),
+                                                 QTableWidgetItem(str(data["attemptsLeft"])))
+                    if "marks" in data.keys():
+                        self.tableWidget.setItem(row, self.columnFromLabel("Total Marks"),
+                                                 QTableWidgetItem(str(data["marks"])))
+            except Exception as e:
+                print(e)
+        except Exception as e:
+            print(e)
+            self.tableWidget.clear()
 
 
 class CreateNewModuleDialog(QDialog, Ui_Dialog_Create_New_Module):
@@ -159,7 +252,7 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         self.lineEdit_test3_marks.textChanged.connect(self.update_total_marks)
         self.lineEdit_test4_marks.textChanged.connect(self.update_total_marks)
         # set up initial available module codes
-        self.comboBox_moduleCode.addItems(self.get_module_codes())
+        self.comboBox_moduleCode.addItems(get_module_codes())
         # set up week numbers
         self.comboBox_weekNumber.addItems(["w01", "w02", "w03", "w04", "w05", "w06",
                                            "w07", "w08", "w09", "w10", "w11", "w12", "w13"])
@@ -169,11 +262,6 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         self.checkBox_test2_inputDataFile.stateChanged.connect(self.add_input_data_file)
         self.checkBox_test3_inputDataFile.stateChanged.connect(self.add_input_data_file)
         self.checkBox_test4_inputDataFile.stateChanged.connect(self.add_input_data_file)
-
-    @staticmethod
-    def get_module_codes() -> list:
-        path = DIR_ROOT + "/module/"
-        return [name for name in os.listdir(path)]
 
     def add_input_data_file(self):
         """add input data file -- signal"""

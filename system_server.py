@@ -332,8 +332,12 @@ def getExecResult(name, sock):
     required_code_filename = get_required_code_filename(module_code, week_number)
     code_filepath = const.get_program_file_path(module_code, week_number, student_id, required_code_filename)
     params_filepath = const.get_params_file_path(module_code, week_number)
+    vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
     with open(params_filepath, 'r') as stream:
         data: dict = yaml.safe_load(stream)
+    with open(vars_filepath, 'r') as stream:
+        vars_data: dict = yaml.safe_load(stream)
+
     if data["tests"]:
         # if attendance exists, check attendance, assign marks
         if data["tests"]["attendance"]:
@@ -341,6 +345,8 @@ def getExecResult(name, sock):
             attendance_tag = data["tests"]["attendance"]["tag"]
             curr_marks = curr_marks + attendance_marks
             result_msg += "%s: %d/%d\n" % (attendance_tag, attendance_marks, attendance_marks)
+            vars_data["attendance"] = attendance_marks
+
         # if compilation exists, check compilation, assign marks
         if data["tests"]["compilation"]:
             compilation_marks = int(data["tests"]["compilation"]["marks"])
@@ -356,6 +362,7 @@ def getExecResult(name, sock):
                 # compilation successful
                 curr_marks = curr_marks + compilation_marks
                 result_msg += "%s: %d/%d\n" % (compilation_tag, compilation_marks, compilation_marks)
+                vars_data["compilation"] = compilation_marks
 
                 # execute the rest of custom tests when compilation success
                 for key in data["tests"].keys():
@@ -373,12 +380,13 @@ def getExecResult(name, sock):
 
                         # TODO: continue to check if output is correct???
                         # TODO: show result_msg
+                        # TODO: add custom test results to vars_data
+
+                        with open(vars_filepath, 'w') as f:
+                            yaml.dump(vars_data, f)
             else:
                 # compilation failed
                 result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)
-
-            # change working directory back
-            # os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
         # check assignment attempts left and update attempts left
         vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
