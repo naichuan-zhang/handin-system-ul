@@ -277,15 +277,24 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             lambda: self.add_file_with_check_box(self.checkBox_test4_answerFile, self.label_test4_answerFile))
 
         self.checkBox_test1_filterFile.stateChanged.connect(
-            lambda: self.add_file_with_check_box(self.checkBox_test1_filterFile, self.label_test1_filterFile))
+            lambda: self.add_file_with_check_box(self.checkBox_test1_filterFile, self.label_test1_filterFile,
+                                                 is_filter=True, filter_line_edit=self.lineEdit_test1_filterCommand))
         self.checkBox_test2_filterFile.stateChanged.connect(
-            lambda: self.add_file_with_check_box(self.checkBox_test2_filterFile, self.label_test2_filterFile))
+            lambda: self.add_file_with_check_box(self.checkBox_test2_filterFile, self.label_test2_filterFile,
+                                                 is_filter=True, filter_line_edit=self.lineEdit_test2_filterCommand))
         self.checkBox_test3_filterFile.stateChanged.connect(
-            lambda: self.add_file_with_check_box(self.checkBox_test3_filterFile, self.label_test3_filterFile))
+            lambda: self.add_file_with_check_box(self.checkBox_test3_filterFile, self.label_test3_filterFile,
+                                                 is_filter=True, filter_line_edit=self.lineEdit_test3_filterCommand))
         self.checkBox_test4_filterFile.stateChanged.connect(
-            lambda: self.add_file_with_check_box(self.checkBox_test4_filterFile, self.label_test4_filterFile))
+            lambda: self.add_file_with_check_box(self.checkBox_test4_filterFile, self.label_test4_filterFile,
+                                                 is_filter=True, filter_line_edit=self.lineEdit_test4_filterCommand))
 
-    def add_file_with_check_box(self, check_box, label):
+        self.lineEdit_test1_filterCommand.setDisabled(True)
+        self.lineEdit_test2_filterCommand.setDisabled(True)
+        self.lineEdit_test3_filterCommand.setDisabled(True)
+        self.lineEdit_test4_filterCommand.setDisabled(True)
+
+    def add_file_with_check_box(self, check_box, label, is_filter=False, filter_line_edit=None):
         """add data/answer/filter file with check box -- signal"""
         if check_box.isChecked():
             dialog = QtWidgets.QFileDialog()
@@ -293,8 +302,12 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             filename, file_type = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Choose file", "./", "All Files (*)")
             label.setText(filename)
+            if is_filter and (filter_line_edit is not None):
+                filter_line_edit.setEnabled(True)
         else:
             label.setText("")
+            if filter_line_edit is not None:
+                filter_line_edit.setEnabled(False)
 
     def disable_buttonbox(self):
         """disable button box -- signal"""

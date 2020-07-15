@@ -354,7 +354,7 @@
     <rect>
      <x>30</x>
      <y>300</y>
-     <width>701</width>
+     <width>741</width>
      <height>81</height>
     </rect>
    </property>
@@ -476,7 +476,7 @@
     <rect>
      <x>30</x>
      <y>390</y>
-     <width>701</width>
+     <width>741</width>
      <height>151</height>
     </rect>
    </property>
@@ -634,14 +634,37 @@
    <widget class="QLabel" name="label_test1_filterFile">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>140</x>
       <y>130</y>
-      <width>521</width>
+      <width>331</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_28">
+    <property name="geometry">
+     <rect>
+      <x>451</x>
+      <y>130</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter Cmd:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_test1_filterCommand">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>130</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -650,7 +673,7 @@
     <rect>
      <x>30</x>
      <y>540</y>
-     <width>701</width>
+     <width>741</width>
      <height>141</height>
     </rect>
    </property>
@@ -810,12 +833,35 @@
      <rect>
       <x>170</x>
       <y>120</y>
-      <width>521</width>
+      <width>281</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_test2_filterCommand">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>120</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_29">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>120</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter Cmd:</string>
     </property>
    </widget>
   </widget>
@@ -824,7 +870,7 @@
     <rect>
      <x>30</x>
      <y>680</y>
-     <width>701</width>
+     <width>741</width>
      <height>141</height>
     </rect>
    </property>
@@ -984,12 +1030,35 @@
      <rect>
       <x>170</x>
       <y>120</y>
-      <width>521</width>
+      <width>271</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_test3_filterCommand">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>120</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_30">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>120</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter Cmd:</string>
     </property>
    </widget>
   </widget>
@@ -998,7 +1067,7 @@
     <rect>
      <x>30</x>
      <y>820</y>
-     <width>701</width>
+     <width>741</width>
      <height>141</height>
     </rect>
    </property>
@@ -1119,7 +1188,7 @@
      <rect>
       <x>170</x>
       <y>120</y>
-      <width>521</width>
+      <width>271</width>
       <height>16</height>
      </rect>
     </property>
@@ -1164,6 +1233,29 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_test4_filterCommand">
+    <property name="geometry">
+     <rect>
+      <x>559</x>
+      <y>110</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_31">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>110</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter Cmd:</string>
     </property>
    </widget>
   </widget>
