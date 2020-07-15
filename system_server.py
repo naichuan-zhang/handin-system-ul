@@ -1,9 +1,10 @@
 import os
 import socket
+import string
 import threading
 import time
 from datetime import datetime
-from subprocess import Popen, PIPE, call
+from subprocess import Popen, PIPE
 
 import yaml
 
@@ -152,7 +153,7 @@ def checkAttemptsLeft(name, sock):
     week_number = sock.recv(1024).decode()
     # read vars.yaml file to get attemptsLeft value
     path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-                + student_id + "/" + week_number + "/"
+           + student_id + "/" + week_number + "/"
     filename = path + "vars.yaml"
     with open(filename, 'r') as stream:
         data: dict = yaml.safe_load(stream)
@@ -204,7 +205,7 @@ def createVarsFile(name, sock):
     student_id = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
     path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-                + student_id + "/" + week_number + "/"
+           + student_id + "/" + week_number + "/"
     filename = path + "vars.yaml"
     if not os.path.exists(filename):
         with open(filename, 'w'):
@@ -223,7 +224,7 @@ def initVarsFile(name, sock):
     student_id = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
     path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-                + student_id + "/" + week_number + "/"
+           + student_id + "/" + week_number + "/"
     filename = path + "vars.yaml"
     data = {
         "attemptsLeft": get_total_attempts(module_code, week_number),
@@ -338,79 +339,106 @@ def getExecResult(name, sock):
     with open(vars_filepath, 'r') as stream:
         vars_data: dict = yaml.safe_load(stream)
 
-    if data["tests"]:
-        # if attendance exists, check attendance, assign marks
-        if data["tests"]["attendance"]:
-            attendance_marks = int(data["tests"]["attendance"]["marks"])
-            attendance_tag = data["tests"]["attendance"]["tag"]
-            curr_marks = curr_marks + attendance_marks
-            result_msg += "%s: %d/%d\n" % (attendance_tag, attendance_marks, attendance_marks)
-            vars_data["attendance"] = attendance_marks
+    # check if attempts left
+    if vars_data["attemptsLeft"] and vars_data["attemptsLeft"] <= 0:
+        if data["tests"]:
+            # if attendance exists, check attendance, assign marks
+            if data["tests"]["attendance"]:
+                attendance_marks = int(data["tests"]["attendance"]["marks"])
+                attendance_tag = data["tests"]["attendance"]["tag"]
+                curr_marks = curr_marks + attendance_marks
+                result_msg += "%s: %d/%d\n" % (attendance_tag, attendance_marks, attendance_marks)
+                vars_data["attendance"] = attendance_marks
 
-        # if compilation exists, check compilation, assign marks
-        if data["tests"]["compilation"]:
-            compilation_marks = int(data["tests"]["compilation"]["marks"])
-            compilation_tag = data["tests"]["compilation"]["tag"]
-            compilation_command = data["tests"]["compilation"]["command"]
+            # if compilation exists, check compilation, assign marks
+            if data["tests"]["compilation"]:
+                compilation_marks = int(data["tests"]["compilation"]["marks"])
+                compilation_tag = data["tests"]["compilation"]["tag"]
+                compilation_command = data["tests"]["compilation"]["command"]
 
-            # change working directory
-            os.chdir(os.path.dirname(code_filepath))
+                # change working directory
+                os.chdir(os.path.dirname(code_filepath))
 
-            p = Popen(compilation_command, stdout=PIPE, shell=True)
-            return_code = p.wait()
-            if return_code == 0:
-                # compilation successful
-                curr_marks = curr_marks + compilation_marks
-                result_msg += "%s: %d/%d\n" % (compilation_tag, compilation_marks, compilation_marks)
-                vars_data["compilation"] = compilation_marks
+                p = Popen(compilation_command, stdout=PIPE, shell=True)
+                return_code = p.wait()
+                if return_code == 0:
+                    # compilation successful
+                    curr_marks = curr_marks + compilation_marks
+                    result_msg += "%s: %d/%d\n" % (compilation_tag, compilation_marks, compilation_marks)
+                    vars_data["compilation"] = compilation_marks
 
-                # execute the rest of custom tests when compilation success
-                for key in data["tests"].keys():
-                    if key.startswith("test"):
-                        test_marks = int(data["tests"][key]["marks"])
-                        test_tag = data["tests"][key]["tag"]
-                        test_command = data["tests"][key]["command"]
-                        input_data_file_path = data["tests"][key]["inputDataFile"]
-                        input_data_file = open(input_data_file_path, 'r')
+                    # execute the rest of custom tests when compilation success
+                    for key in data["tests"].keys():
+                        if key.startswith("test"):
+                            test_marks = int(data["tests"][key]["marks"])
+                            test_tag = data["tests"][key]["tag"]
+                            test_command = data["tests"][key]["command"]
+                            input_data_file_path = data["tests"][key]["inputDataFile"]
+                            answer_file_path = data["tests"][key]["answerFile"]
+                            filter_file_path = data["tests"][key]["filterFile"]
+                            if input_data_file_path is not None and input_data_file_path != '':
+                                input_data_file = open(input_data_file_path, 'r')
 
-                        # change working directory
-                        os.chdir(os.path.dirname(code_filepath))
-                        proc = Popen(test_command, stdin=input_data_file, stdout=PIPE, stderr=PIPE, shell=False)
-                        stdout, stderr = proc.communicate()
+                                # change working directory
+                                os.chdir(os.path.dirname(code_filepath))
+                                proc = Popen(test_command, stdin=input_data_file, stdout=PIPE, stderr=PIPE, shell=False)
+                                stdout, stderr = proc.communicate()  # bytes
 
-                        # TODO: continue to check if output is correct???
-                        # TODO: show result_msg
-                        # TODO: add custom test results to vars_data
+                                # TODO: check filter file logic here...
 
-                        with open(vars_filepath, 'w') as f:
-                            yaml.dump(vars_data, f)
-            else:
-                # compilation failed
-                result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)
+                                # compare stdout with the answer file
+                                if answer_file_path is not None and answer_file_path != '':
+                                    answer_file = open(answer_file_path, 'rb')
+                                    answer: bytes = answer_file.read()
 
-        # check assignment attempts left and update attempts left
-        vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
-        with open(vars_filepath, 'r') as stream:
-            vars_data: dict = yaml.safe_load(stream)
-        if vars_data["attemptsLeft"]:
-            vars_data["attemptsLeft"] = vars_data["attemptsLeft"] - 1
-            if vars_data["attemptsLeft"] <= 0:
-                vars_data["attemptsLeft"] = 0
-        with open(vars_filepath, 'w') as f:
-            yaml.dump(vars_data, f)
-        result_msg += "\n\nYou have %s attempts left\n\n" % str(vars_data["attemptsLeft"])
+                                    if compare_output_with_answer(str(stdout), str(answer)):
+                                        # custom test success
+                                        curr_marks = curr_marks + test_marks
+                                        result_msg += "%s: %d/%d</br>" % (test_tag, test_marks, test_marks)
+                                        vars_data[key] = test_marks
+                                    else:
+                                        # custom test failed
+                                        result_msg += "%s: %d/%d</br>" % (test_tag, 0, test_marks)
+                                        vars_data[key] = 0
 
-        # update student marks
-        with open(vars_filepath, 'r') as stream:
-            vars_data2: dict = yaml.safe_load(stream)
-        if "marks" in vars_data2.keys():
-            vars_data2["marks"] = curr_marks
-        with open(vars_filepath, 'w') as f:
-            yaml.dump(vars_data2, f)
-        result_msg += "\n\nTotal marks: %s\n\n" % str(vars_data2["marks"])
+                else:
+                    # compilation failed
+                    result_msg += "%s: %d/%d\n" % (compilation_tag, 0, compilation_marks)
+                    vars_data["compilation"] = 0
+
+                with open(vars_filepath, 'w') as f:
+                    yaml.dump(vars_data, f)
+
+            # check assignment attempts left and update attempts left
+            vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
+            with open(vars_filepath, 'r') as stream:
+                vars_data: dict = yaml.safe_load(stream)
+            if vars_data["attemptsLeft"]:
+                vars_data["attemptsLeft"] = vars_data["attemptsLeft"] - 1
+                if vars_data["attemptsLeft"] <= 0:
+                    vars_data["attemptsLeft"] = 0
+            with open(vars_filepath, 'w') as f:
+                yaml.dump(vars_data, f)
+            result_msg += "\n\nYou have %s attempts left\n\n" % str(vars_data["attemptsLeft"])
+
+            # update student marks
+            with open(vars_filepath, 'r') as stream:
+                vars_data2: dict = yaml.safe_load(stream)
+            if "marks" in vars_data2.keys():
+                vars_data2["marks"] = curr_marks
+            with open(vars_filepath, 'w') as f:
+                yaml.dump(vars_data2, f)
+            result_msg += "\n\nTotal marks: %s\n\n" % str(vars_data2["marks"])
+    else:
+        result_msg = "Sorry, you have no attempts left for this assignment!"
 
     sock.sendall(result_msg.encode())
     RetrCommand(name, sock)
+
+
+def compare_output_with_answer(output: str, answer: str) -> bool:
+    remove = string.punctuation + string.whitespace
+    return output.maketrans(dict.fromkeys(remove)) == answer.maketrans(dict.fromkeys(remove))
 
 
 if __name__ == '__main__':

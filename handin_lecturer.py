@@ -293,6 +293,10 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         self.lineEdit_test2_filterCommand.setDisabled(True)
         self.lineEdit_test3_filterCommand.setDisabled(True)
         self.lineEdit_test4_filterCommand.setDisabled(True)
+        self.checkBox_test1_filterFile.stateChanged.connect(self.disable_buttonbox)
+        self.checkBox_test2_filterFile.stateChanged.connect(self.disable_buttonbox)
+        self.checkBox_test3_filterFile.stateChanged.connect(self.disable_buttonbox)
+        self.checkBox_test4_filterFile.stateChanged.connect(self.disable_buttonbox)
 
     def add_file_with_check_box(self, check_box, label, is_filter=False, filter_line_edit=None):
         """add data/answer/filter file with check box -- signal"""
@@ -366,8 +370,9 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
         inputDataFile = self.label_test1_inputDataFile.text().strip()
         answerFile = self.label_test1_answerFile.text().strip()
         filterFile = self.label_test1_filterFile.text().strip()
-        tests["test1"] = {"tag": tag, "marks": marks, "command": command,
-                          "inputDataFile": inputDataFile, "answerFile": answerFile, "filterFile": filterFile}
+        filterCommand = self.lineEdit_test1_filterCommand.text().strip()
+        tests["test1"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile,
+                          "answerFile": answerFile, "filterFile": filterFile, "filterCommand": filterCommand}
         if self.groupBox_customTest2.isChecked():
             tag = self.lineEdit_test2_tag.text().strip()
             marks = int(self.lineEdit_test2_marks.text().strip())
@@ -375,8 +380,9 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             inputDataFile = self.label_test2_inputDataFile.text().strip()
             answerFile = self.label_test2_answerFile.text().strip()
             filterFile = self.label_test2_filterFile.text().strip()
-            tests["test2"] = {"tag": tag, "marks": marks, "command": command,
-                              "inputDataFile": inputDataFile, "answerFile": answerFile, "filterFile": filterFile}
+            filterCommand = self.lineEdit_test2_filterCommand.text().strip()
+            tests["test2"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile,
+                              "answerFile": answerFile, "filterFile": filterFile, "filterCommand": filterCommand}
         if self.groupBox_customTest3.isChecked():
             tag = self.lineEdit_test3_tag.text().strip()
             marks = int(self.lineEdit_test3_marks.text().strip())
@@ -384,8 +390,9 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             inputDataFile = self.label_test3_inputDataFile.text().strip()
             answerFile = self.label_test3_answerFile.text().strip()
             filterFile = self.label_test3_filterFile.text().strip()
-            tests["test3"] = {"tag": tag, "marks": marks, "command": command,
-                              "inputDataFile": inputDataFile, "answerFile": answerFile, "filterFile": filterFile}
+            filterCommand = self.lineEdit_test3_filterCommand.text().strip()
+            tests["test3"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile,
+                              "answerFile": answerFile, "filterFile": filterFile, "filterCommand": filterCommand}
         if self.groupBox_customTest4.isChecked():
             tag = self.lineEdit_test4_tag.text().strip()
             marks = int(self.lineEdit_test4_marks.text().strip())
@@ -393,8 +400,9 @@ class CreateWeeklyAssignmentDialog(QDialog, Ui_Dialog_Create_Weekly_Assignment):
             inputDataFile = self.label_test4_inputDataFile.text().strip()
             answerFile = self.label_test4_answerFile.text().strip()
             filterFile = self.label_test4_filterFile.text().strip()
-            tests["test4"] = {"tag": tag, "marks": marks, "command": command,
-                              "inputDataFile": inputDataFile, "answerFile": answerFile, "filterFile": filterFile}
+            filterCommand = self.lineEdit_test4_filterCommand.text().strip()
+            tests["test4"] = {"tag": tag, "marks": marks, "command": command, "inputDataFile": inputDataFile,
+                              "answerFile": answerFile, "filterFile": filterFile, "filterCommand": filterCommand}
 
         if not check_if_week_exists(module_code=module_code, week_number=week_number):
             path = "/module/" + module_code + "/"
