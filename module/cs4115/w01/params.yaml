@@ -1,24 +1,23 @@
-collectionFilename: mtrans.cc
-cutoffDay: 15/07/2020 14:50
-endDay: 08/07/2020 14:50
+collectionFilename: test.cpp
+cutoffDay: 25/07/2020 12:45
+endDay: 20/07/2020 12:45
 moduleCode: cs4115
 penaltyPerDay: 1
-startDay: 08/07/2020 14:50
+startDay: 15/07/2020 12:45
 tests:
   attendance:
     marks: 1
     tag: attendance
   compilation:
-    command: g++ -std=c++0x -o mtrans mtrans.cc
+    command: xxx
     marks: 2
     tag: compilation
   test1:
-    command: ---
+    answerFile: F:/PyCharmProjects/handin-ul/misc/c18111521/dataInput.txt
+    command: ssss
+    filterFile: ''
+    inputDataFile: F:/PyCharmProjects/handin-ul/misc/c18111521/dataInput.txt
     marks: 3
-    tag: test 1 ...
-  test2:
-    command: xxxx
-    marks: 3
-    tag: test 2 ...
+    tag: test1
 totalAttempts: 10
 weekNumber: w01

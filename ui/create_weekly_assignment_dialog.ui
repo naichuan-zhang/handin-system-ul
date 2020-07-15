@@ -29,7 +29,7 @@
    <property name="geometry">
     <rect>
      <x>410</x>
-     <y>940</y>
+     <y>960</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -280,7 +280,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>230</y>
+     <y>220</y>
      <width>371</width>
      <height>71</height>
     </rect>
@@ -353,7 +353,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>310</y>
+     <y>300</y>
      <width>701</width>
      <height>81</height>
     </rect>
@@ -475,9 +475,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>429</y>
+     <y>390</y>
      <width>701</width>
-     <height>111</height>
+     <height>151</height>
     </rect>
    </property>
    <property name="font">
@@ -570,7 +570,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>70</y>
       <width>161</width>
       <height>19</height>
      </rect>
@@ -583,8 +583,60 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>80</y>
+      <y>70</y>
       <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test1_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>100</y>
+      <width>131</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Answer File</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test1_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>130</y>
+      <width>121</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test1_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>100</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test1_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>130</y>
+      <width>521</width>
       <height>16</height>
      </rect>
     </property>
@@ -597,9 +649,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>560</y>
+     <y>540</y>
      <width>701</width>
-     <height>111</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="font">
@@ -692,7 +744,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>60</y>
       <width>151</width>
       <height>19</height>
      </rect>
@@ -705,8 +757,60 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>80</y>
+      <y>60</y>
       <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test2_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>90</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test2_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>121</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter File</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test2_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>131</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Answer File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test2_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>120</y>
+      <width>521</width>
       <height>16</height>
      </rect>
     </property>
@@ -721,7 +825,7 @@
      <x>30</x>
      <y>680</y>
      <width>701</width>
-     <height>111</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="font">
@@ -814,7 +918,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>60</y>
       <width>151</width>
       <height>19</height>
      </rect>
@@ -826,9 +930,61 @@
    <widget class="QLabel" name="label_test3_inputDataFile">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>80</y>
+      <x>190</x>
+      <y>60</y>
       <width>511</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test3_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>90</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test3_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>121</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter File</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test3_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>131</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Answer File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test3_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>120</y>
+      <width>521</width>
       <height>16</height>
      </rect>
     </property>
@@ -841,9 +997,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>810</y>
+     <y>820</y>
      <width>701</width>
-     <height>111</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="font">
@@ -936,7 +1092,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
+      <y>60</y>
       <width>151</width>
       <height>19</height>
      </rect>
@@ -948,8 +1104,8 @@
    <widget class="QLabel" name="label_test4_inputDataFile">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>80</y>
+      <x>180</x>
+      <y>60</y>
       <width>521</width>
       <height>16</height>
      </rect>
@@ -958,19 +1114,58 @@
      <string/>
     </property>
    </widget>
-  </widget>
-  <widget class="QCheckBox" name="checkBox_addFilter">
-   <property name="geometry">
-    <rect>
-     <x>490</x>
-     <y>260</y>
-     <width>121</width>
-     <height>19</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Add Filter</string>
-   </property>
+   <widget class="QLabel" name="label_test4_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>120</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test4_filterFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>121</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter File</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_test4_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>131</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Answer File</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_test4_answerFile">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>90</y>
+      <width>521</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>
