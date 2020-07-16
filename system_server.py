@@ -322,6 +322,7 @@ def getExecResult(name, sock):
     week_number = sock.recv(1024).decode()
     student_id = sock.recv(1024).decode()
     file_suffix = sock.recv(1024).decode()
+    penalty = sock.recv(1024).decode()
 
     if file_suffix == "cc" or file_suffix == "cpp":
         lang = "c++"
@@ -442,6 +443,10 @@ def getExecResult(name, sock):
                 yaml.dump(vars_data, f)
             result_msg += "\n\nYou have %s attempts left\n\n" % str(vars_data["attemptsLeft"])
 
+            # apply penalty
+            curr_marks = curr_marks - int(penalty)
+            result_msg += "\n\nPenalty: %s\n\n" % str(penalty)
+
             # update student marks
             with open(vars_filepath, 'r') as stream:
                 vars_data2: dict = yaml.safe_load(stream)
@@ -449,7 +454,7 @@ def getExecResult(name, sock):
                 vars_data2["marks"] = curr_marks
             with open(vars_filepath, 'w') as f:
                 yaml.dump(vars_data2, f)
-            result_msg += "\n\nTotal marks: %s\n\n" % str(vars_data2["marks"])
+            result_msg += "\n\nTotal marks: %s\n\n" % str(curr_marks)
     else:
         result_msg = "Sorry, you have no attempts left for this assignment!"
 

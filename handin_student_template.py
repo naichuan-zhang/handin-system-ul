@@ -217,9 +217,8 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                 send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
                 # get exec result output
                 print('send file to server finished ...')
-                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix)
+                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix, str(penalty))
                 self.output(result)
-                # TODO: when handin success, attemptsLeft - 1 ...
             else:
                 self.output(msg, "ERROR")
 
@@ -355,13 +354,14 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
         print(msg)
 
 
-def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix) -> str:
+def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix, penalty: str) -> str:
     s.sendall(b"Get exec result")
     if s.recv(1024).decode() == "OK":
         s.sendall(module_code.encode())
         s.sendall(week_number.encode())
         s.sendall(student_id.encode())
         s.sendall(file_suffix.encode())
+        s.sendall(penalty.encode())
 
         # TODO: Continue here ...
         result = s.recv(1024).decode()
