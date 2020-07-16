@@ -15,8 +15,8 @@ tests:
   test1:
     answerFile: F:/PyCharmProjects/handin-ul/misc/c18111521/answer.txt
     command: test
-    filterCommand: get-findvals.pl
-    filterFile: F:/PyCharmProjects/handin-ul/misc/cs4023-w09/scripts/get-findvals.pl
+    filterCommand: perl filter.pl
+    filterFile: F:/PyCharmProjects/handin-ul/misc/c18111521/filter.pl
     inputDataFile: F:/PyCharmProjects/handin-ul/misc/c18111521/dataInput.txt
     marks: 3
     tag: test 1

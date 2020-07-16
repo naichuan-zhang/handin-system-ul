@@ -5,7 +5,7 @@ import threading
 import time
 from datetime import datetime
 from subprocess import Popen, PIPE
-
+import shutil
 import yaml
 
 import const
@@ -340,7 +340,7 @@ def getExecResult(name, sock):
         vars_data: dict = yaml.safe_load(stream)
 
     # check if attempts left
-    if vars_data["attemptsLeft"] and vars_data["attemptsLeft"] <= 0:
+    if vars_data["attemptsLeft"] and vars_data["attemptsLeft"] > 0:
         if data["tests"]:
             # if attendance exists, check attendance, assign marks
             if data["tests"]["attendance"]:
@@ -376,22 +376,43 @@ def getExecResult(name, sock):
                             input_data_file_path = data["tests"][key]["inputDataFile"]
                             answer_file_path = data["tests"][key]["answerFile"]
                             filter_file_path = data["tests"][key]["filterFile"]
+                            filter_command = data["tests"][key]["filterCommand"]
                             if input_data_file_path is not None and input_data_file_path != '':
                                 input_data_file = open(input_data_file_path, 'r')
 
                                 # change working directory
                                 os.chdir(os.path.dirname(code_filepath))
                                 proc = Popen(test_command, stdin=input_data_file, stdout=PIPE, stderr=PIPE, shell=False)
-                                stdout, stderr = proc.communicate()  # bytes
-
-                                # TODO: check filter file logic here...
+                                output, stderr = proc.communicate()  # bytes
 
                                 # compare stdout with the answer file
                                 if answer_file_path is not None and answer_file_path != '':
                                     answer_file = open(answer_file_path, 'rb')
                                     answer: bytes = answer_file.read()
 
-                                    if compare_output_with_answer(str(stdout), str(answer)):
+                                    # use stdout and answer as two argv of filter file, then perform filtering
+                                    # TODO: may need to be changed ...
+                                    if (filter_file_path is not None and filter_file_path != '') and \
+                                            (filter_command is not None and filter_command != ''):
+                                        try:
+                                            # copy filter file to student dir
+                                            filter_filename = os.path.basename(filter_file_path)
+                                            filter_file_path_dst = os.path.join(os.path.dirname(code_filepath), filter_filename)
+                                            with open(filter_file_path_dst, 'w'):
+                                                pass
+                                            shutil.copyfile(filter_file_path, filter_file_path_dst)
+
+                                            os.chdir(os.path.dirname(filter_file_path_dst))
+                                            output = replace_whitespace_with_underscore(output.decode('utf-8')).encode('utf-8')
+                                            answer = replace_whitespace_with_underscore(answer.decode('utf-8')).encode('utf-8')
+                                            command: str = (filter_command + " %s %s") % (output.decode('utf-8'), answer.decode('utf-8'))
+                                            filter_proc = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+                                            stdout, stderr = filter_proc.communicate()
+                                            output, answer = stdout.decode('utf-8').split(' ')
+                                        except Exception as e:
+                                            print(e)
+
+                                    if compare_output_with_answer(str(output), str(answer)):
                                         # custom test success
                                         curr_marks = curr_marks + test_marks
                                         result_msg += "%s: %d/%d</br>" % (test_tag, test_marks, test_marks)
@@ -439,6 +460,10 @@ def getExecResult(name, sock):
 def compare_output_with_answer(output: str, answer: str) -> bool:
     remove = string.punctuation + string.whitespace
     return output.maketrans(dict.fromkeys(remove)) == answer.maketrans(dict.fromkeys(remove))
+
+
+def replace_whitespace_with_underscore(text: str) -> str:
+    return text.replace(' ', '_').replace('\r', '_').replace('\n', '_')
 
 
 if __name__ == '__main__':
