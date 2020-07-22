@@ -7,11 +7,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import const
 
 """ ###########################################
-    Server for student to access handin.py file
+    Server for student to access and download handin.py file
 """
 
-# TODO: Dynamically change module code here...
+# TODO: config module code and name here...
 MODULE_CODE = "cs4115"
+MODULE_NAME = "Default"
 
 HOST = "127.0.0.1"
 PORT = 8000
@@ -194,14 +195,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         # write content of handin_student_template.py to handin_xxx.txt
         with open(self.handin_file_path + filename, 'wb') as f:
             content_bytes: bytes = open('handin_student_template.py', 'rb').read()
-            # TODO: need to config the params dynamically here!!!!!
             content = content_bytes.decode('utf-8').format(
                         str(const.HANDIN_HOST),  # host
                         str(const.HANDIN_PORT),  # port
                         str(student_name),       # student name
                         str(student_id),         # student id
                         str(MODULE_CODE),        # module code
-                        "",                      # module name
+                        str(MODULE_NAME),        # module name
                     ).encode('utf-8')
             f.write(content)
 

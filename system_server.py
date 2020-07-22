@@ -22,7 +22,7 @@ def get_file_content(path, mode='r'):
 
 def get_total_attempts(module_code, week_number) -> int:
     """read /**weekNum**/params.yaml file to get totalAttempts value"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/params.yaml"
+    path = const.get_params_file_path(module_code, week_number)
     with open(path, 'r') as stream:
         data: dict = yaml.safe_load(stream)
     return data.get("totalAttempts")
@@ -30,9 +30,8 @@ def get_total_attempts(module_code, week_number) -> int:
 
 def getPenaltyPerDay(module_code, week_number):
     """get penalty per day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("penaltyPerDay"):
         return str(data.get("penaltyPerDay"))
@@ -43,9 +42,8 @@ def getPenaltyPerDay(module_code, week_number):
 
 def getStartDay(module_code, week_number):
     """get start day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("startDay"):
         return str(data.get("startDay"))
@@ -56,9 +54,8 @@ def getStartDay(module_code, week_number):
 
 def getEndDay(module_code, week_number):
     """get end day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("endDay"):
         return str(data.get("endDay"))
@@ -69,9 +66,8 @@ def getEndDay(module_code, week_number):
 
 def getCutoffDay(module_code, week_number):
     """get cutoff day for a module"""
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    filename = path + "params.yaml"
-    with open(filename, 'r') as stream:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("cutoffDay"):
         return str(data.get("cutoffDay"))
@@ -152,10 +148,8 @@ def checkAttemptsLeft(name, sock):
     student_id = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
     # read vars.yaml file to get attemptsLeft value
-    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-           + student_id + "/" + week_number + "/"
-    filename = path + "vars.yaml"
-    with open(filename, 'r') as stream:
+    vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
+    with open(vars_filepath, 'r') as stream:
         data: dict = yaml.safe_load(stream)
     if data.get("attemptsLeft"):
         sock.sendall(str(data.get("attemptsLeft")).encode('utf-8'))
@@ -204,11 +198,9 @@ def createVarsFile(name, sock):
     module_code = sock.recv(1024).decode()
     student_id = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
-    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-           + student_id + "/" + week_number + "/"
-    filename = path + "vars.yaml"
-    if not os.path.exists(filename):
-        with open(filename, 'w'):
+    vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
+    if not os.path.exists(vars_filepath):
+        with open(vars_filepath, 'w'):
             pass
         sock.sendall(b"Success")
         RetrCommand(name, sock)
@@ -223,14 +215,12 @@ def initVarsFile(name, sock):
     module_code = sock.recv(1024).decode()
     student_id = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
-    path = const.DIR_ROOT + "/module/" + module_code + "/data/" \
-           + student_id + "/" + week_number + "/"
-    filename = path + "vars.yaml"
+    vars_filepath = const.get_vars_file_path(module_code, week_number, student_id)
     data = {
         "attemptsLeft": get_total_attempts(module_code, week_number),
         "marks": 0,
     }
-    with open(filename, 'w') as f:
+    with open(vars_filepath, 'w') as f:
         yaml.dump(data, f, default_flow_style=False)
     RetrCommand(name, sock)
 
@@ -282,9 +272,8 @@ def checkCollectionFilename(name, sock):
     module_code = sock.recv(1024).decode()
     week_number = sock.recv(1024).decode()
 
-    path = const.DIR_ROOT + "/module/" + module_code + "/" + week_number + "/"
-    file = path + "params.yaml"
-    with open(file, 'r') as stream:
+    params_filepath = const.get_params_file_path(module_code, week_number)
+    with open(params_filepath, 'r') as stream:
         data = yaml.safe_load(stream)
     if data.get("collectionFilename") and str(data.get("collectionFilename")) == filename:
         sock.sendall(b"True")

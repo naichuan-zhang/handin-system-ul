@@ -1,25 +1,19 @@
 # -*- coding: utf-8 -*-
-import os
 import socket
 import sys
-import time
-
-import tqdm
 from datetime import datetime
-from subprocess import Popen, PIPE
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QFileInfo
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
-# TODO: change everything back to 127.0.0.1 later !!!!!
 HOST = "127.0.0.1"
 PORT = "5000"
 STUDENT_NAME = "Naichuan Zhang"
 STUDENT_ID = "18111521"
-MODULE_CODE = "CS4115"
-MODULE_NAME = "5000"
+MODULE_CODE = "cs4115"
+MODULE_NAME = "Default"
 # ****** DYNAMIC CONFIGS ****** #
 
 
@@ -217,9 +211,8 @@ class HandinMainWindow(QMainWindow, Ui_MainWindow):
                 send_file_to_server(self.submit_filepath, MODULE_CODE, week_number, STUDENT_ID, s)
                 # get exec result output
                 print('send file to server finished ...')
-                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix)
+                result = get_exec_result(MODULE_CODE, week_number, STUDENT_ID, s, file_suffix, str(penalty))
                 self.output(result)
-                # TODO: when handin success, attemptsLeft - 1 ...
             else:
                 self.output(msg, "ERROR")
 
@@ -355,15 +348,15 @@ def send_file_to_server(submit_filepath, module_code, week_number, student_id, s
         print(msg)
 
 
-def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix) -> str:
+def get_exec_result(module_code, week_number, student_id, s: socket.socket, file_suffix, penalty: str) -> str:
     s.sendall(b"Get exec result")
     if s.recv(1024).decode() == "OK":
         s.sendall(module_code.encode())
         s.sendall(week_number.encode())
         s.sendall(student_id.encode())
         s.sendall(file_suffix.encode())
+        s.sendall(penalty.encode())
 
-        # TODO: Continue here ...
         result = s.recv(1024).decode()
         return result
 

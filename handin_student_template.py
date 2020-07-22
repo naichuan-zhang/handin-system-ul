@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
-import os
 import socket
 import sys
-import time
-
-import tqdm
 from datetime import datetime
-from subprocess import Popen, PIPE
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QFileInfo
 from PyQt5.QtWidgets import QMainWindow
 
 # ****** DYNAMIC CONFIGS ****** #
-# TODO: change everything back to {} later !!!!!
-HOST = "127.0.0.1"
-PORT = "5000"
-STUDENT_NAME = "Naichuan Zhang"
-STUDENT_ID = "18111521"
-MODULE_CODE = "CS4115"
+HOST = "{}"
+PORT = "{}"
+STUDENT_NAME = "{}"
+STUDENT_ID = "{}"
+MODULE_CODE = "{}"
 MODULE_NAME = "{}"
 # ****** DYNAMIC CONFIGS ****** #
 
@@ -363,7 +357,6 @@ def get_exec_result(module_code, week_number, student_id, s: socket.socket, file
         s.sendall(file_suffix.encode())
         s.sendall(penalty.encode())
 
-        # TODO: Continue here ...
         result = s.recv(1024).decode()
         return result
 

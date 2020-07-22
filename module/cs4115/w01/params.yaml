@@ -1,9 +1,9 @@
 collectionFilename: test.cpp
-cutoffDay: 25/07/2020 13:42
-endDay: 15/07/2020 13:42
+cutoffDay: 27/07/2020 11:30
+endDay: 25/07/2020 11:30
 moduleCode: cs4115
 penaltyPerDay: 1
-startDay: 13/07/2020 13:42
+startDay: 22/07/2020 11:30
 tests:
   attendance:
     marks: 1
