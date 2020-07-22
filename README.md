@@ -94,4 +94,4 @@ Required Python Modules
 ---
 1. Python 3.x (Student, Lecturer)
 2. PyQt5 (Student, Lecturer)
-3. yaml (Lecturer)
+3. PyYAML (Lecturer)
